@@ -1,5 +1,23 @@
 import discord
 from discord.ext import commands
+from flask import Flask
+from threading import Thread
+import os
+
+# === TRÁI TIM NHÂN TẠO (GIỮ BOT SỐNG TRÊN RENDER) ===
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Bot Tuglar đang sống nhăn răng trên Render!"
+
+def run_server():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run_server)
+    t.start()
+# ====================================================
 
 intents = discord.Intents.default()
 intents.members = True
@@ -9,7 +27,13 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 # ================= CẤU HÌNH =================
-TOKEN = 'MTUwNzMxMTk3OTA3OTkyOTkzOA.GPQou0.0vk4vUq1p3pr3KM6q1QzkWiNymZsGvfSzFM17c' 
+# CÁCH 1: Dán thẳng Token (Nhớ giữ kho GitHub ở chế độ Private)
+TOKEN = 'MTUwNzMxMTk3OTA3OTkyOTkzOA.GPQou0.0vk4vUq1p3pr3KM6q1QzkWiNymZsGvfSzFM17c'
+
+# CÁCH 2: Nếu Public Github, hãy thêm Biến môi trường DISCORD_TOKEN trên Render
+# (Xóa dấu # ở dòng dưới và xóa dòng TOKEN = 'bảo mật' ở trên đi)
+# TOKEN = os.environ.get('DISCORD_TOKEN') 
+
 BOOSTER_ROLE_ID = 1000062456007249930 # ID role Server Booster
 
 MESSAGE_CONFIGS = {
@@ -72,7 +96,7 @@ async def on_raw_reaction_add(payload):
                         # LUÔN LUÔN ép gỡ UI Reaction cũ (Không cần kiểm tra role)
                         try:
                             await message.remove_reaction(mapped_emoji, member)
-                        except Exception as e:
+                        except Exception:
                             pass
                             
                         # Gom các role cũ để thu hồi
@@ -131,16 +155,18 @@ async def setup(ctx):
         msg_mau = await ctx.channel.fetch_message(1507323471984722030)
         for emoji in ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"]:
             await msg_mau.add_reaction(emoji)
-    except:
-        pass
+    except Exception as e:
+        print(f"Lỗi setup bảng màu: {e}")
 
     try:
         msg_icon = await ctx.channel.fetch_message(1507323572824309780)
         for emoji in ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]:
             await msg_icon.add_reaction(emoji)
-    except:
-        pass
+    except Exception as e:
+        print(f"Lỗi setup bảng icon: {e}")
     
     await ctx.send("✅ Đã setup xong các nút thả tim!", delete_after=5)
 
-bot.run(TOKEN)
+# === GỌI LỆNH CHẠY ===
+keep_alive() # Khởi động Web Server ảo
+bot.run(TOKEN) # Khởi động Bot
