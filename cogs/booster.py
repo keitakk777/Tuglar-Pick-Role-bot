@@ -226,18 +226,15 @@ class BoosterCog(commands.Cog):
         view = ProfileMenuView(user_tier)
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
-@app_commands.command(name="index", description="Sổ tay Role Đảo Tuglar (Hoặc tra cứu role bất kỳ)")
+    @app_commands.command(name="index", description="Sổ tay Role Đảo Tuglar (Hoặc tra cứu role bất kỳ)")
     @app_commands.describe(role="Chọn role bạn muốn tra cứu (Bỏ trống để mở trang Sổ Tay tổng hợp)")
     async def index_cmd(self, interaction: discord.Interaction, role: discord.Role = None):
         guild = interaction.guild
         
-        # ====== KỊCH BẢN 1: TRA CỨU ROLE BẤT KỲ ======
         if role:
-            # Setup nội dung tra cứu động
             cach_nhan = "Đang cập nhật... (Role ẩn hoặc Role Sự kiện)"
             dac_quyen = "Chưa có thông tin"
             
-            # Logic quét nguồn gốc (Tùy chỉnh thêm nếu cần)
             if role.id == BOOSTER_ROLE_ID:
                 cach_nhan = "Nạp Boost cho Server (Mở khóa Tier 0)"
                 dac_quyen = "<:perk_collection:1193667977405534218> Truy cập Kho đồ Màu Sắc"
@@ -248,7 +245,7 @@ class BoosterCog(commands.Cog):
                 cach_nhan = "Role đặc quyền dành cho Ban Quản Trị"
                 dac_quyen = "Toàn quyền quản lý Server"
 
-            so_nguoi = len(role.members) # Lệnh đếm số lượng người sở hữu thực tế
+            so_nguoi = len(role.members) 
             
             content = (
                 f"## {role.mention}\n"
@@ -259,12 +256,10 @@ class BoosterCog(commands.Cog):
             await interaction.response.send_message(content, ephemeral=False)
             return
 
-        # ====== KỊCH BẢN 2: MỞ SỔ TAY TỔNG HỢP (Nếu không chọn role) ======
         def count_role(role_id):
             r = guild.get_role(role_id)
             return len(r.members) if r else 0
 
-        # Áp dụng chính xác Form thiết kế của Tuglar kèm biến đếm tự động count_role()
         content = f"""# <:TugIsl_search:1169899042411655229> SỔ TAY ROLE ĐẢO TUGLAR #
 ## <:TugIsl_icon_filter:1169910021644111932> Phân loại role ##
 > - Các role trong server được chia ra làm nhiều loại khác nhau. Mỗi loại có cách sở hữu và đặc quyền ưu tiên khác nhau.
@@ -318,3 +313,6 @@ class BoosterCog(commands.Cog):
 > - Sở hữu: `{count_role(1189375452603756645)}`"""
         
         await interaction.response.send_message(content, ephemeral=False)
+
+async def setup(bot):
+    await bot.add_cog(BoosterCog(bot))
