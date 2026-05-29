@@ -278,35 +278,17 @@ class BoosterCog(commands.Cog):
 ### <:TugIsl_icon_compass:1189060875299078275> Achievement Role  ###
 > Các role này nhận được khi hoàn thành yêu cầu nhất định trong server. Thường không giới hạn thời gian nên dễ sở hữu.
 
-# KÍ HIỆU ĐẶC QUYỀN
-> <:perk_channel:1193785089927172127> : Truy cập kênh, khu vực ẩn
-> <:perk_displayseperately:1193783034323931207> : Hiển thị riêng biệt
-> <:perk_customrole:1193667963828584579> : Tạo Custom Role
-> <:perk_event:1193798278211448912> : Tham gia SK riêng
-> <:perk_collection:1193667977405534218> : Truy cập kênh BST
-> <:perk_currency:1193731640808185866> : Tăng %, cơ hội nhận thêm tiền tệ, thưởng
-> <:perk_chatxp:1193731741899313282> : Tăng kinh nghiệm
-
 # <:TugIsl_icon_event:1182752944156844093> Event Role
-## <@&1157198996234842143> :badge_ev_sinhnhat1tuoi: 
+## <@&1157198996234842143> <:1anni:1510063186429083648>
 > - Ra mắt: <t:1688835600:R>
 > - Cách nhận: **Tham gia SK SN 1 Tuổi Đảo Tuglar**
 > - Sở hữu: `{count_role(1157198996234842143)}`
-## <@&1157198566452903987> :badge_ev_trungthu2023:
-> - Ra mắt: <t:1695056400:R>
-> - Cách nhận: **Mở quà 🎁**
-> - Sở hữu: `{count_role(1157198566452903987)}`
-## <@&1157733360131653792> :badge_ev_halloween2023: 
-> - Ra mắt: <t:1697648400:R>
-> - Cách nhận: **Điểm danh 7N** 🗓️
-> - Đặc quyền: <:perk_collection:1193667977405534218> BST Halloween 2023
-> - Sở hữu: `{count_role(1157733360131653792)}`
-## <@&1169623255297032272> <:winterlands2023:1171367296573382696>  ##
+## <@&1169623255297032272> <:winterlands2023:1510063146583199994>
 > - Ra mắt: <t:1698771600:R>
 > - Cách nhận: **Tưới cây thông noel 🎄**
 > - Đặc quyền: <:perk_collection:1193667977405534218> BST Winterlands 2023
 > - Sở hữu: `{count_role(1169623255297032272)}`
-## <@&1189375452603756645> :ev_tet2024:  <:TugIsl_label_new1:1169902201729200168><:TugIsl_label_2:1169902320889372692><:TugIsl_new_badge_3:1169902472001749092> 
+## <@&1189375452603756645> <:tet2024:1510063134415650946> 
 > - Ra mắt: <t:1706720400:R>
 > - Cách nhận: **Trang trí Tết - Đổi mảnh 🧩**
 > - Đặc quyền: <:perk_collection:1193667977405534218> BST Tết 2024
