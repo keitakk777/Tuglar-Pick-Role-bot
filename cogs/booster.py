@@ -226,29 +226,95 @@ class BoosterCog(commands.Cog):
         view = ProfileMenuView(user_tier)
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
-    @app_commands.command(name="index", description="Xem cẩm nang lộ trình mở khóa các đặc quyền Booster")
-    async def index_cmd(self, interaction: discord.Interaction):
-        thumb_url = interaction.guild.icon.url if interaction.guild.icon else self.bot.user.display_avatar.url
-
-        embed = discord.Embed(
-            title="🌟 CẨM NANG ĐẶC QUYỀN BOOSTER",
-            description=(
-                "Cảm ơn bạn đã quan tâm đến việc ủng hộ **Tuglar**! "
-                "Bằng việc **Boost Server**, bạn không chỉ giúp server mở khóa các tính năng xịn xò mà còn nhận được một kho đồ trang trí hồ sơ độc quyền.\n\n"
-                "**❓ Làm sao để trang bị?**\n"
-                "Rất đơn giản, sau khi Boost, hãy gõ lệnh `/profile` để mở tủ đồ của bạn nhé!\n"
-                "▬" * 15
-            ),
-            color=0xff73fa, timestamp=discord.utils.utcnow()
-        )
-        embed.add_field(name="💖 TIER 0: BOOSTER GỐC", value="**Điều kiện:** Vừa Boost Server\n**🎁 Mở khóa:** Gói Màu Sắc cơ bản (`Sky`, `Carrot`, `Rose`, `Purple`, `Peachy`)", inline=False)
-        embed.add_field(name="<:IR_Booster_I:1509974377481895966> TIER 1: BOOSTER I", value="**Điều kiện:** Duy trì Boost **7 ngày**\n**🎁 Mở khóa:** Gói Icon Đặc Biệt (`Mint`, `xLemon`, `Cyber-20xx`, `TraDaoCamSa`...)", inline=False)
-        embed.add_field(name="<:IR_Booster_II:1509974379474194683> TIER 2: BOOSTER II", value="**Điều kiện:** Duy trì Boost **14 ngày**\n**🎁 Mở khóa:** *(Đang cập nhật thêm đồ xịn...)*", inline=False)
-        embed.add_field(name="<:IR_Booster_III:1509974381584056552> TIER 3 - TIER 8 (TỐI CAO)", value="**Điều kiện:** Duy trì Boost từ **21 ngày** đến **56 ngày**\n**🎁 Mở khóa:** Các đặc quyền và màu sắc thần thoại trong tương lai. Càng giữ lâu, quà càng khủng!", inline=False)
+@app_commands.command(name="index", description="Sổ tay Role Đảo Tuglar (Hoặc tra cứu role bất kỳ)")
+    @app_commands.describe(role="Chọn role bạn muốn tra cứu (Bỏ trống để mở trang Sổ Tay tổng hợp)")
+    async def index_cmd(self, interaction: discord.Interaction, role: discord.Role = None):
+        guild = interaction.guild
         
-        embed.set_thumbnail(url=thumb_url)
-        embed.set_footer(text=FOOTER_TEXT)
-        await interaction.response.send_message(embed=embed, ephemeral=False)
+        # ====== KỊCH BẢN 1: TRA CỨU ROLE BẤT KỲ ======
+        if role:
+            # Setup nội dung tra cứu động
+            cach_nhan = "Đang cập nhật... (Role ẩn hoặc Role Sự kiện)"
+            dac_quyen = "Chưa có thông tin"
+            
+            # Logic quét nguồn gốc (Tùy chỉnh thêm nếu cần)
+            if role.id == BOOSTER_ROLE_ID:
+                cach_nhan = "Nạp Boost cho Server (Mở khóa Tier 0)"
+                dac_quyen = "<:perk_collection:1193667977405534218> Truy cập Kho đồ Màu Sắc"
+            elif role.id in ALL_COLOR_ROLES or role.id in ALL_ICON_ROLES:
+                cach_nhan = "Mở khóa từ Đặc quyền Booster (Dùng lệnh `/profile`)"
+                dac_quyen = "<:perk_displayseperately:1193783034323931207> Trang trí Profile"
+            elif role.permissions.administrator:
+                cach_nhan = "Role đặc quyền dành cho Ban Quản Trị"
+                dac_quyen = "Toàn quyền quản lý Server"
 
-async def setup(bot):
-    await bot.add_cog(BoosterCog(bot))
+            so_nguoi = len(role.members) # Lệnh đếm số lượng người sở hữu thực tế
+            
+            content = (
+                f"## {role.mention}\n"
+                f"> - Cách nhận: **{cach_nhan}**\n"
+                f"> - Đặc quyền: {dac_quyen}\n"
+                f"> - Sở hữu: `{so_nguoi}`\n"
+            )
+            await interaction.response.send_message(content, ephemeral=False)
+            return
+
+        # ====== KỊCH BẢN 2: MỞ SỔ TAY TỔNG HỢP (Nếu không chọn role) ======
+        def count_role(role_id):
+            r = guild.get_role(role_id)
+            return len(r.members) if r else 0
+
+        # Áp dụng chính xác Form thiết kế của Tuglar kèm biến đếm tự động count_role()
+        content = f"""# <:TugIsl_search:1169899042411655229> SỔ TAY ROLE ĐẢO TUGLAR #
+## <:TugIsl_icon_filter:1169910021644111932> Phân loại role ##
+> - Các role trong server được chia ra làm nhiều loại khác nhau. Mỗi loại có cách sở hữu và đặc quyền ưu tiên khác nhau.
+> - Hiện tại, server có các phân loại chính: 
+
+### <:TugIsl_icon_bag:1189471543886090313> Collection Role ###
+> - Các role custom, role tùy biến (đặc quyền từ role khác) sẽ ở phân loại này.
+> - Các role này có thể được hiển thị hoặc ẩn ở danh mục ✨ Bộ Sưu Tập
+
+### <:TugIsl_icon_star:1189471573401419827> Special Role ###
+> Các role này thường chỉ dành cho một số người với các tiêu chí để nhận, đặc biệt hơn so với achievement role 
+
+### <:TugIsl_icon_event:1182752944156844093> Event Role  ###
+> - Các role này thường chỉ xuất hiện **1 lần duy nhất** với các sự kiện để đánh dấu lại cột mốc thời gian bạn đã đồng hành cùng với server.
+
+### <:TugIsl_icon_compass:1189060875299078275> Achievement Role  ###
+> Các role này nhận được khi hoàn thành yêu cầu nhất định trong server. Thường không giới hạn thời gian nên dễ sở hữu.
+
+# KÍ HIỆU ĐẶC QUYỀN
+> <:perk_channel:1193785089927172127> : Truy cập kênh, khu vực ẩn
+> <:perk_displayseperately:1193783034323931207> : Hiển thị riêng biệt
+> <:perk_customrole:1193667963828584579> : Tạo Custom Role
+> <:perk_event:1193798278211448912> : Tham gia SK riêng
+> <:perk_collection:1193667977405534218> : Truy cập kênh BST
+> <:perk_currency:1193731640808185866> : Tăng %, cơ hội nhận thêm tiền tệ, thưởng
+> <:perk_chatxp:1193731741899313282> : Tăng kinh nghiệm
+
+# <:TugIsl_icon_event:1182752944156844093> Event Role
+## <@&1157198996234842143> :badge_ev_sinhnhat1tuoi: 
+> - Ra mắt: <t:1688835600:R>
+> - Cách nhận: **Tham gia SK SN 1 Tuổi Đảo Tuglar**
+> - Sở hữu: `{count_role(1157198996234842143)}`
+## <@&1157198566452903987> :badge_ev_trungthu2023:
+> - Ra mắt: <t:1695056400:R>
+> - Cách nhận: **Mở quà 🎁**
+> - Sở hữu: `{count_role(1157198566452903987)}`
+## <@&1157733360131653792> :badge_ev_halloween2023: 
+> - Ra mắt: <t:1697648400:R>
+> - Cách nhận: **Điểm danh 7N** 🗓️
+> - Đặc quyền: <:perk_collection:1193667977405534218> BST Halloween 2023
+> - Sở hữu: `{count_role(1157733360131653792)}`
+## <@&1169623255297032272> <:winterlands2023:1171367296573382696>  ##
+> - Ra mắt: <t:1698771600:R>
+> - Cách nhận: **Tưới cây thông noel 🎄**
+> - Đặc quyền: <:perk_collection:1193667977405534218> BST Winterlands 2023
+> - Sở hữu: `{count_role(1169623255297032272)}`
+## <@&1189375452603756645> :ev_tet2024:  <:TugIsl_label_new1:1169902201729200168><:TugIsl_label_2:1169902320889372692><:TugIsl_new_badge_3:1169902472001749092> 
+> - Ra mắt: <t:1706720400:R>
+> - Cách nhận: **Trang trí Tết - Đổi mảnh 🧩**
+> - Đặc quyền: <:perk_collection:1193667977405534218> BST Tết 2024
+> - Sở hữu: `{count_role(1189375452603756645)}`"""
+        
+        await interaction.response.send_message(content, ephemeral=False)
