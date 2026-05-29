@@ -34,6 +34,17 @@ SERVER_ID = 995320755002814514 # ID Server Tuglar
 BOOSTER_ROLE_ID = 1000062456007249930 # ID role Server Booster gốc
 LOG_CHANNEL_ID = 995612550383292458 # Kênh gửi thông báo level up
 
+# --- DANH SÁCH QUẢN LÝ LỘT ROLE TỰ ĐỘNG ---
+# Gom TẤT CẢ ID Role Màu của mọi Tier vào đây
+ALL_COLOR_ROLES = [
+    1162545019123666984, 1157298054764974130, 1157296480722366555, 1157297666879926304, 1157298499461840906, # Tier 0
+    1164764867769667664, 1164766440335876126, 1510012176876699768, 1164946570920337538, 1164946156858650635  # Tier 1 (Hiện bạn đang dùng làm màu)
+]
+
+# Gom TẤT CẢ ID Role Icon của mọi Tier vào đây (Sau này có Icon thì điền ID vào)
+ALL_ICON_ROLES = [] 
+# ------------------------------------------
+
 BOOSTER_TIERS = {
     7: 1509967931675640039,  # Booster I
     14: 1509970643993628672, # Booster II
@@ -81,7 +92,6 @@ MESSAGE_CONFIGS = {
 
 # === GIAO DIỆN LỆNH /BOOSTER VỚI EMBED XỊN XÒ ===
 
-# Lớp chức năng cho Menu xổ xuống
 class BoosterRoleSelect(discord.ui.Select):
     def __init__(self, placeholder, options, role_group_ids):
         super().__init__(placeholder=placeholder, min_values=1, max_values=1, options=options)
@@ -92,7 +102,7 @@ class BoosterRoleSelect(discord.ui.Select):
         guild = interaction.guild
         member = interaction.user
         
-        # Tự động gỡ các role cũ cùng loại (đảm bảo chỉ 1 màu hoặc 1 icon)
+        # Lột sạch các role cũ nằm trong Danh Sách Đen (ALL_COLOR_ROLES hoặc ALL_ICON_ROLES)
         roles_to_remove = [guild.get_role(r) for r in self.role_group_ids if guild.get_role(r) and guild.get_role(r) in member.roles]
         if roles_to_remove:
             await member.remove_roles(*roles_to_remove)
@@ -108,11 +118,9 @@ class BoosterRoleSelect(discord.ui.Select):
         else:
             await interaction.response.send_message("❌ Lỗi: Role không tồn tại trên hệ thống.", ephemeral=True)
 
-# Lớp chức năng cho Nút Bấm Gỡ Toàn Bộ
 class ClearAllRolesButton(discord.ui.Button):
     def __init__(self, all_pickable_role_ids):
-        # Thiết lập nút màu đỏ (danger) nằm ở hàng thứ 2 (row=2) để không bị đè lên menu
-        super().__init__(style=discord.ButtonStyle.danger, label="Gỡ Toàn Bộ Role", emoji="🗑️", row=2)
+        super().__init__(style=discord.ButtonStyle.danger, label="Gỡ Toàn Bộ Role Màu & Icon", emoji="🗑️", row=2)
         self.all_pickable_role_ids = all_pickable_role_ids
 
     async def callback(self, interaction: discord.Interaction):
@@ -131,8 +139,6 @@ class BoosterMenuView(discord.ui.View):
     def __init__(self, user_tier):
         super().__init__(timeout=300) 
         
-        all_pickable_ids = [] # Danh sách tổng hợp tất cả ID role để ném vào Nút gỡ toàn bộ
-        
         # ====== MENU MÀU (DÀNH CHO BOOSTER GỐC TRỞ LÊN) ======
         if user_tier >= 1:
             color_options = [
@@ -143,25 +149,25 @@ class BoosterMenuView(discord.ui.View):
                 discord.SelectOption(label="Purple", value="1157298499461840906", emoji="<:IC_Purple:1510004463362900229>"),
                 discord.SelectOption(label="Peachy", value="1157298054764974130", emoji="<:IC_Peachy:1509997745916612768>")
             ]
-            color_ids = [1162545019123666984, 1157298054764974130, 1157296480722366555, 1157297666879926304, 1157298499461840906]
-            all_pickable_ids.extend(color_ids)
-            self.add_item(BoosterRoleSelect("🎨 Color Pack - Booster 0", color_options, color_ids))
+            # Truyền ALL_COLOR_ROLES vào để khi chọn ở bảng này, nó quét sạch mọi màu kể cả ở bảng khác
+            self.add_item(BoosterRoleSelect("🎨 Color Pack - Booster", color_options, ALL_COLOR_ROLES))
             
-        # ====== MENU ICON (DÀNH CHO BOOSTER I TRỞ LÊN) ======
+        # ====== MENU ICON/MÀU 2 (DÀNH CHO BOOSTER I TRỞ LÊN) ======
         if user_tier >= 2:
             icon_options = [
                 discord.SelectOption(label="Gỡ Role Màu", description="Hủy chọn role hiện tại", value="0", emoji="❌"),
-                discord.SelectOption(label="Mint", value="1164764867769667664", emoji="<:IC_1stHeart:1510016047896334536>"),
+                discord.SelectOption(label="Mint", value="1164764867769667664", emoji="<:IC_Mint:1510016060982558731>"),
                 discord.SelectOption(label="xLemon", value="1164766440335876126", emoji="<:IC_xLemon:1510016065122336929>"),
                 discord.SelectOption(label="1stHeart", value="1510012176876699768", emoji="<:IC_1stHeart:1510016047896334536>"),
                 discord.SelectOption(label="Cyber-20xx", value="1164946570920337538", emoji="<:IC_Cyber20xx:1510016058613043230>"),
                 discord.SelectOption(label="TraDaoCamSa", value="1164946156858650635", emoji="<:IC_TraDaoCamSa:1510016063125852410>")
             ]
-            icon_ids = [1164764867769667664, 1164766440335876126, 1510012176876699768, 1164946570920337538, 1164946156858650635]
-            all_pickable_ids.extend(icon_ids)
-            self.add_item(BoosterRoleSelect("🎨 Color Pack - Booster I", icon_options, icon_ids))
+            # Hiện tại bảng này cũng đang chứa role màu, nên ta VẪN TRUYỀN ALL_COLOR_ROLES
+            # (Sau này nếu đổi thành Icon thật, bạn chỉ cần thay ALL_COLOR_ROLES thành ALL_ICON_ROLES ở dòng dưới đây là xong)
+            self.add_item(BoosterRoleSelect("🎨 Color Pack - Booster I", icon_options, ALL_COLOR_ROLES))
             
-        # Thêm Nút Gỡ Toàn Bộ nếu có ít nhất 1 menu hiện ra
+        # Thêm Nút Gỡ Toàn Bộ
+        all_pickable_ids = ALL_COLOR_ROLES + ALL_ICON_ROLES
         if all_pickable_ids:
             self.add_item(ClearAllRolesButton(all_pickable_ids))
 
@@ -320,7 +326,7 @@ async def on_ready():
         print('⏳ Hệ thống auto Tiến Hóa Booster đã được kích hoạt!')
     print('-------------------------------------------')
 
-# --- 4. GIỮ LẠI CƠ CHẾ THẢ TIM CŨ (Chạy song song) ---
+# --- 4. GIỮ LẠI CƠ CHẾ THẢ TIM CŨ (Chạy song song và lột chuẩn xác) ---
 @bot.event
 async def on_raw_reaction_add(payload):
     if payload.member.bot: return
@@ -338,15 +344,12 @@ async def on_raw_reaction_add(payload):
                 channel = bot.get_channel(payload.channel_id)
                 message = await channel.fetch_message(payload.message_id)
 
-                roles_to_remove = []
-                for mapped_emoji, mapped_role_id in role_mapping.items():
-                    if mapped_emoji != emoji_name: 
-                        try: await message.remove_reaction(mapped_emoji, member)
-                        except Exception: pass
-                            
-                        old_role = guild.get_role(mapped_role_id)
-                        if old_role and old_role in member.roles:
-                            roles_to_remove.append(old_role)
+                try: await message.remove_reaction(payload.emoji, member)
+                except Exception: pass
+                
+                # Quét và lột dựa trên Danh Sách Đen tổng hợp
+                roles_to_check = ALL_COLOR_ROLES if config["type"] == "Màu" else ALL_ICON_ROLES
+                roles_to_remove = [guild.get_role(r) for r in roles_to_check if guild.get_role(r) and guild.get_role(r) in member.roles]
                 
                 if roles_to_remove:
                     await member.remove_roles(*roles_to_remove)
