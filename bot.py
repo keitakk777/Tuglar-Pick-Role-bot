@@ -127,7 +127,7 @@ class GenericRoleSelect(discord.ui.Select):
         if new_role in member.roles:
             await member.remove_roles(new_role)
             embed = discord.Embed(
-                title=f"{selected_emoji_str} Bạn đã gỡ bỏ role: {new_role.name}", 
+                title=f"{selected_emoji_str}・Bạn đã gỡ bỏ role: {new_role.name}", 
                 color=0xff4757, timestamp=discord.utils.utcnow()
             )
             embed.set_footer(text=FOOTER_TEXT)
@@ -234,7 +234,7 @@ async def profile_cmd(interaction: discord.Interaction):
     if user_tier == 0:
         embed = discord.Embed(
             title="👤 Hồ Sơ Của Bạn | Thành Viên Thường",
-            description="Chào mừng bạn đến với mục quản lý hồ sơ!\n\n👇 **Để nhận thông báo (Ping Server, Event...), hãy vào mục <id:customize>.**\n\n✨ **Đặc quyền Độc Quyền:** Boost Server để mở khóa các pack role độc đáo cạnh tên bạn nhé!",
+            description="Chào mừng bạn đến với mục quản lý hồ sơ!\n\n👇 **Để quản lí role thông báo (Ping Server, Event...), hãy vào mục <id:customize>.**\n\n✨ **Đặc quyền Độc Quyền:** Boost Server để mở khóa các pack role độc đáo cạnh tên bạn nhé!",
             color=0x3498db,
             timestamp=discord.utils.utcnow()
         )
