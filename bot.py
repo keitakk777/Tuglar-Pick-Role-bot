@@ -109,57 +109,71 @@ class BoosterMenuView(discord.ui.View):
     def __init__(self, user_tier):
         super().__init__(timeout=300) 
         
-        # ====== CHỈNH SỬA EMOJI Ở MENU MÀU ======
+        # ====== MENU MÀU (DÀNH CHO BOOSTER GỐC TRỞ LÊN) ======
         if user_tier >= 1:
             color_options = [
                 discord.SelectOption(label="Gỡ Role Màu", description="Hủy chọn màu hiện tại", value="0", emoji="❌"),
-                discord.SelectOption(label="Sky", value="1162545019123666984", emoji="1️⃣"),
-                discord.SelectOption(label="Peachy", value="1157298054764974130", emoji="2️⃣"),
-                discord.SelectOption(label="Carrot", value="1157296480722366555", emoji="3️⃣"),
-                discord.SelectOption(label="Rose", value="1157297666879926304", emoji="4️⃣"),
-                discord.SelectOption(label="Purple", value="1157298499461840906", emoji="5️⃣")
+                discord.SelectOption(label="Sky", value="1162545019123666984", emoji="<:IC_Sky:1509998906723799191>"),
+                discord.SelectOption(label="Carrot", value="1157296480722366555", emoji="<:IC_Carrot:1510003170661892399>"),
+                discord.SelectOption(label="Rose", value="1157297666879926304", emoji="<:IC_Rose:1510003959652155556>"),
+                discord.SelectOption(label="Purple", value="1157298499461840906", emoji="<:IC_Purple:1510004463362900229>"),
+                discord.SelectOption(label="Peachy", value="1157298054764974130", emoji="<:IC_Peachy:1509997745916612768>")
             ]
             color_ids = [1162545019123666984, 1157298054764974130, 1157296480722366555, 1157297666879926304, 1157298499461840906]
-            # Placeholder không hỗ trợ custom emoji nên dùng icon vẽ mặc định
-            self.add_item(BoosterRoleSelect("🎨 Solid Color Pack", color_options, color_ids))
+            self.add_item(BoosterRoleSelect("🎨 Chọn Role Màu (Đã mở khóa: Booster Gốc)", color_options, color_ids))
             
-        # ====== CHỈNH SỬA EMOJI Ở MENU ICON ======
+        # ====== MENU ICON (DÀNH CHO BOOSTER I TRỞ LÊN) ======
         if user_tier >= 2:
             icon_options = [
                 discord.SelectOption(label="Gỡ Role Icon", description="Hủy chọn icon hiện tại", value="0", emoji="❌"),
                 discord.SelectOption(label="Galactic Chrome", value="1164764867769667664", emoji="<:Staff_FA:1509995186644713646>"),
-                discord.SelectOption(label="Holo", value="1164766440335876126", emoji="2️⃣"),
-                discord.SelectOption(label="Sakura", value="1164946156858650635", emoji="3️⃣"),
-                discord.SelectOption(label="Sherbet Dreamsicle", value="1164946570920337538", emoji="4️⃣")
+                discord.SelectOption(label="Holo", value="1164766440335876126", emoji="<:ten_emoji_holo:ID_emoji_holo>"),
+                discord.SelectOption(label="Sakura", value="1164946156858650635", emoji="<:ten_emoji_sakura:ID_emoji_sakura>"),
+                discord.SelectOption(label="Sherbet Dreamsicle", value="1164946570920337538", emoji="<:ten_emoji_sherbet:ID_emoji_sherbet>")
             ]
             icon_ids = [1164764867769667664, 1164766440335876126, 1164946156858650635, 1164946570920337538]
-            self.add_item(BoosterRoleSelect("✨ Chọn Role Icon (Đã mở khóa ở LV 2)", icon_options, icon_ids))
+            self.add_item(BoosterRoleSelect("✨ Chọn Role Icon (Đã mở khóa: Booster I)", icon_options, icon_ids))
 
 @bot.tree.command(name="booster", description="Mở giao diện chọn role độc quyền dành cho Server Booster")
 async def booster_cmd(interaction: discord.Interaction):
+    # Cập nhật lại bản đồ cấp độ: Booster Gốc là Cấp 1, Booster I là Cấp 2...
     tier_levels = {
-        1509967931675640039: 1, 
-        1509970643993628672: 2, 
-        1509970708850020523: 3, 
-        1509970736767438879: 4, 
-        1509970770305224918: 5, 
-        1509970819932094584: 6, 
-        1509970853192798259: 7, 
-        1509962710928982288: 8  
+        BOOSTER_ROLE_ID: 1,      # Role Booster Gốc (mới thêm vào)
+        1509967931675640039: 2,  # Booster I
+        1509970643993628672: 3,  # Booster II
+        1509970708850020523: 4,  # Booster III
+        1509970736767438879: 5,  # Booster IV
+        1509970770305224918: 6,  # Booster V
+        1509970819932094584: 7,  # Booster VI
+        1509970853192798259: 8,  # Booster VII
+        1509962710928982288: 9   # Booster VIII
+    }
+    
+    tier_names = {
+        1: "Booster Gốc",
+        2: "Booster I",
+        3: "Booster II",
+        4: "Booster III",
+        5: "Booster IV",
+        6: "Booster V",
+        7: "Booster VI",
+        8: "Booster VII",
+        9: "Booster VIII"
     }
     
     member = interaction.user
     user_tier = 0
-    current_emoji = "✨"
+    current_emoji = "💖" # Thay đổi emoji mặc định thành tim hồng cho Booster Gốc
     
     for role in member.roles:
         if role.id in tier_levels:
             if tier_levels[role.id] > user_tier:
                 user_tier = tier_levels[role.id]
-                current_emoji = BOOSTER_EMOJIS.get(role.id, "✨")
+                # Nếu là Booster Gốc (ko có trong dict EMOJI), nó sẽ lấy tim hồng
+                current_emoji = BOOSTER_EMOJIS.get(role.id, "💖")
                 
     if user_tier == 0:
-        await interaction.response.send_message("❌ Bạn cần đạt ít nhất cấp **Booster I** (Boost 1 tuần) để mở khóa giao diện này!", ephemeral=True)
+        await interaction.response.send_message("❌ Bạn cần đang **Boost Server** để mở khóa giao diện này!", ephemeral=True)
         return
         
     days_boosted = 0
@@ -182,8 +196,11 @@ async def booster_cmd(interaction: discord.Interaction):
     else:
         progress_text = "**Tiến độ nâng cấp:** Đã đạt cấp độ Tối Đa 🏆\n`[██████████] 100%`"
 
+    # Lấy tên cấp bậc hiển thị lên UI
+    tier_title = tier_names.get(user_tier, "Booster")
+
     embed = discord.Embed(
-        title=f"Kho Đồ Độc Quyền | Booster LV {user_tier}",
+        title=f"Kho Đồ Độc Quyền | {tier_title}",
         description=f"Cảm ơn bạn đã đồng hành cùng Server! Dưới đây là các phần thưởng bạn đã mở khóa.\n\n**Huy hiệu Booster:** {current_emoji}\n{progress_text}\n\n👇 **Sử dụng menu bên dưới để trang bị role:**",
         color=0xff73fa 
     )
