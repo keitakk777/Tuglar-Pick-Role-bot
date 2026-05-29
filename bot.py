@@ -132,7 +132,7 @@ class BoosterMenuView(discord.ui.View):
                 discord.SelectOption(label="Cyber-20xx", value="1164946570920337538", emoji="<:IC_Cyber20xx:1510016058613043230>"),
                 discord.SelectOption(label="TraDaoCamSa", value="1164946156858650635", emoji="<:ten_emoji_sherbet:ID_emoji_sherbet>")
             ]
-            icon_ids = [1164764867769667664, 1164766440335876126, 1164946156858650635, 1164946156858650635]
+            icon_ids = [1164764867769667664, 1164766440335876126, 1510012176876699768, 1164946570920337538, 1164946156858650635]
             self.add_item(BoosterRoleSelect("✨ Chọn Role Icon (Đã mở khóa: Booster I)", icon_options, icon_ids))
 
 @bot.tree.command(name="booster", description="Mở giao diện chọn role độc quyền dành cho Server Booster")
