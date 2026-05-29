@@ -136,9 +136,9 @@ class ProfileMenuView(discord.ui.View):
         # ====== 1. MENU ROLE FREE (AI CŨNG THẤY) ======
         # (Bạn sửa ID và Tên ở đây cho phù hợp với server nhé)
         free_options = [
-            discord.SelectOption(label="Hủy nhận Thông báo", description="Không nhận ping nữa", value="0", emoji="🔕"),
-            discord.SelectOption(label="Ping Sự Kiện", description="Nhận thông báo event mới", value="111111111111111111", emoji="🎉"),
-            discord.SelectOption(label="Ping Mini-game", description="Tham gia chơi game cùng server", value="222222222222222222", emoji="🎮")
+            discord.SelectOption(label="Ping Server", description="Nhận thông báo server", value="1127245463305855017", emoji="<:P_Server:1510029791753928827>"),
+            discord.SelectOption(label="Ping Event", description="Nhận thông báo event mới", value="1127525871104839762", emoji="<:P_Event:1510029785772982383>"),
+            discord.SelectOption(label="Ping Giveaway", description="Nhận thông báo giveaway", value="1247481623906226258", emoji="<:P_Giveaway:1510029787878658228>")
         ]
         self.add_item(GenericRoleSelect("📌 Chọn Role Thông Báo (Miễn phí)", free_options, FREE_PING_ROLES, max_val=1))
         
@@ -174,7 +174,7 @@ class ProfileMenuView(discord.ui.View):
         if all_booster_ids:
             self.add_item(ClearBoosterRolesButton(list(set(all_booster_ids))))
 
-@bot.tree.command(name="profile", description="Mở hồ sơ cá nhân để nhận Role Free và Quản lý Đồ Booster")
+@bot.tree.command(name="profile", description="Xem profile và tùy chỉnh các role hiển thị trong server")
 async def profile_cmd(interaction: discord.Interaction):
     tier_levels = {
         BOOSTER_ROLE_ID: 1,      
@@ -207,7 +207,7 @@ async def profile_cmd(interaction: discord.Interaction):
     if user_tier == 0:
         embed = discord.Embed(
             title="👤 Hồ Sơ Của Bạn | Thành Viên Thường",
-            description="Chào mừng bạn đến với mục quản lý hồ sơ!\n\n👇 **Bạn có thể nhận các Role Cơ Bản ở menu bên dưới.**\n\n✨ **Đặc quyền Độc Quyền:** Nâng cấp lên Server Booster ngay hôm nay để mở khóa **Kho Đồ Độc Quyền** gồm các gói Màu Tên và Icon lấp lánh cạnh tên bạn nhé!",
+            description="Chào mừng bạn đến với mục quản lý hồ sơ!\n\n👇 **Bạn có thể nhận các Role Cơ Bản ở menu bên dưới.**\n\n✨ **Đặc quyền Độc Quyền:** Boost Server để mở khóa các pack role độc đáo cạnh tên bạn nhé!",
             color=0x3498db # Màu xanh member thường
         )
         embed.set_thumbnail(url=member.display_avatar.url)
