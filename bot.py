@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands, tasks
+from discord import app_commands
 from flask import Flask
 from threading import Thread
 import os
@@ -27,7 +28,6 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 # ================= CẤU HÌNH =================
-# Dùng biến môi trường để giấu Token an toàn trên Render
 TOKEN = os.environ.get('DISCORD_TOKEN') 
 
 SERVER_ID = 995320755002814514 # ID Server Tuglar
@@ -46,7 +46,6 @@ BOOSTER_TIERS = {
     56: 1509962710928982288  # Booster VIII
 }
 
-# Cấu hình Emoji cho từng mốc (Key ở đây trùng với ID Role ở trên)
 BOOSTER_EMOJIS = {
     1509967931675640039: "<:IR_Booster_I:1509974377481895966>",
     1509970643993628672: "<:IR_Booster_II:1509974379474194683>",
@@ -70,7 +69,6 @@ MESSAGE_CONFIGS = {
             "5️⃣": 1157298499461840906 
         }
     },
-    
     # ------ BẢNG 2: CHỌN ICON ------
     1507323572824309780: { 
         "type": "Icon",
@@ -83,6 +81,101 @@ MESSAGE_CONFIGS = {
     }
 }
 # ============================================
+
+# === GIAO DIỆN LỆNH /BOOSTER (MỚI) ===
+class BoosterRoleSelect(discord.ui.Select):
+    def __init__(self, placeholder, options, role_group_ids):
+        super().__init__(placeholder=placeholder, min_values=1, max_values=1, options=options)
+        self.role_group_ids = role_group_ids
+
+    async def callback(self, interaction: discord.Interaction):
+        selected_role_id = int(self.values[0])
+        guild = interaction.guild
+        member = interaction.user
+        
+        # 1. Quét và thu hồi MỌI role cũ trong nhóm này mà user đang có
+        roles_to_remove = [guild.get_role(r) for r in self.role_group_ids if guild.get_role(r) and guild.get_role(r) in member.roles]
+        if roles_to_remove:
+            await member.remove_roles(*roles_to_remove)
+            
+        # Nếu user chọn "Gỡ Role" (id = 0)
+        if selected_role_id == 0:
+            await interaction.response.send_message("🗑️ Đã thu hồi role thành công!", ephemeral=True)
+            return
+            
+        # 2. Cấp role mới
+        new_role = guild.get_role(selected_role_id)
+        if new_role:
+            await member.add_roles(new_role)
+            await interaction.response.send_message(f"✨ Bạn đã trang bị role: **{new_role.name}**", ephemeral=True)
+        else:
+            await interaction.response.send_message("❌ Lỗi: Role không tồn tại trên hệ thống.", ephemeral=True)
+
+class BoosterMenuView(discord.ui.View):
+    def __init__(self, user_tier):
+        super().__init__(timeout=300) # Menu tự động hết hạn sau 5 phút
+        
+        # ====== MENU LV 1: CHỌN MÀU ======
+        if user_tier >= 1:
+            color_options = [
+                discord.SelectOption(label="Gỡ Role Màu", description="Hủy chọn màu hiện tại", value="0", emoji="❌"),
+                discord.SelectOption(label="Sky", value="1162545019123666984", emoji="1️⃣"),
+                discord.SelectOption(label="Peachy", value="1157298054764974130", emoji="2️⃣"),
+                discord.SelectOption(label="Carrot", value="1157296480722366555", emoji="3️⃣"),
+                discord.SelectOption(label="Rose", value="1157297666879926304", emoji="4️⃣"),
+                discord.SelectOption(label="Purple", value="1157298499461840906", emoji="5️⃣")
+            ]
+            color_ids = [1162545019123666984, 1157298054764974130, 1157296480722366555, 1157297666879926304, 1157298499461840906]
+            self.add_item(BoosterRoleSelect("🎨 Chọn Role Màu (Mở khóa LV 1)", color_options, color_ids))
+            
+        # ====== MENU LV 2: CHỌN ICON ======
+        if user_tier >= 2:
+            icon_options = [
+                discord.SelectOption(label="Gỡ Role Icon", description="Hủy chọn icon hiện tại", value="0", emoji="❌"),
+                discord.SelectOption(label="Galactic Chrome", value="1164764867769667664", emoji="1️⃣"),
+                discord.SelectOption(label="Holo", value="1164766440335876126", emoji="2️⃣"),
+                discord.SelectOption(label="Sakura", value="1164946156858650635", emoji="3️⃣"),
+                discord.SelectOption(label="Sherbet Dreamsicle", value="1164946570920337538", emoji="4️⃣")
+            ]
+            icon_ids = [1164764867769667664, 1164766440335876126, 1164946156858650635, 1164946570920337538]
+            self.add_item(BoosterRoleSelect("✨ Chọn Role Icon (Mở khóa LV 2)", icon_options, icon_ids))
+            
+        # Bạn có thể copy và tạo thêm các MENU LV 3, LV 4 tương tự ở đây sau này!
+
+@bot.tree.command(name="booster", description="Mở giao diện chọn role độc quyền dành cho Server Booster")
+async def booster_cmd(interaction: discord.Interaction):
+    # Khai báo bản đồ cấp bậc (Booster I = LV1, Booster II = LV2...)
+    tier_levels = {
+        1509967931675640039: 1, # Booster I
+        1509970643993628672: 2, # Booster II
+        1509970708850020523: 3, # Booster III
+        1509970736767438879: 4, # Booster IV
+        1509970770305224918: 5, # Booster V
+        1509970819932094584: 6, # Booster VI
+        1509970853192798259: 7, # Booster VII
+        1509962710928982288: 8  # Booster VIII
+    }
+    
+    # Kiểm tra xem user đang ở LV mấy
+    user_tier = 0
+    for role in interaction.user.roles:
+        if role.id in tier_levels:
+            if tier_levels[role.id] > user_tier:
+                user_tier = tier_levels[role.id]
+                
+    # Nếu chưa đạt ít nhất Booster I (LV 1)
+    if user_tier == 0:
+        await interaction.response.send_message("❌ Bạn cần đạt ít nhất cấp **Booster I** (Boost 1 tuần) để mở khóa giao diện này!", ephemeral=True)
+        return
+        
+    view = BoosterMenuView(user_tier)
+    await interaction.response.send_message(
+        f"🎉 **GIAO DIỆN ĐỘC QUYỀN (Bạn đang ở Booster LV {user_tier})**\nHãy chọn các role bạn muốn trang bị ở menu bên dưới:", 
+        view=view, 
+        ephemeral=True
+    )
+# ==============================================
+
 
 # --- 1. VÒNG LẶP TIẾN HÓA & DỌN DẸP ROLE ĐỊNH KỲ ---
 @tasks.loop(hours=24)
@@ -106,14 +199,12 @@ async def check_booster_level():
             if highest_role_id:
                 roles_to_add = []
                 roles_to_remove = []
-                old_role_name = "Booster" # Mặc định cho lần nâng cấp đầu tiên
+                old_role_name = "Booster"
                 
                 target_role = guild.get_role(highest_role_id)
-                # Chỉ xử lý nếu user vừa đủ ngày nhận mốc mới
                 if target_role and target_role not in member.roles:
                     roles_to_add.append(target_role)
                     
-                    # Quét và thu hồi các role cấp độ cũ
                     for r_id in all_tier_roles:
                         if r_id != highest_role_id:
                             old_role = guild.get_role(r_id)
@@ -124,7 +215,6 @@ async def check_booster_level():
                     if roles_to_add:
                         await member.add_roles(*roles_to_add)
                         
-                        # Gửi thông báo Level Up
                         log_channel = bot.get_channel(LOG_CHANNEL_ID)
                         if log_channel:
                             emoji = BOOSTER_EMOJIS.get(highest_role_id, "✨")
@@ -134,7 +224,6 @@ async def check_booster_level():
                     if roles_to_remove:
                         await member.remove_roles(*roles_to_remove)
         else:
-            # Thu hồi toàn bộ nếu user ngừng Boost
             roles_to_remove = [guild.get_role(r_id) for r_id in all_tier_roles if guild.get_role(r_id) and guild.get_role(r_id) in member.roles]
             if roles_to_remove:
                 await member.remove_roles(*roles_to_remove)
@@ -154,20 +243,27 @@ async def on_member_update(before, after):
         if roles_to_remove:
             await after.remove_roles(*roles_to_remove)
 
-# --- 3. CÁC TÍNH NĂNG PICK ROLE ---
+# --- 3. CÁC TÍNH NĂNG PICK ROLE & ĐỒNG BỘ LỆNH ---
 @bot.event
 async def on_ready():
     print(f'✅ Bot {bot.user} đã sẵn sàng phục vụ server!')
+    
+    # Kích hoạt đồng bộ các lệnh Slash Command (như /booster) lên Discord
+    try:
+        synced = await bot.tree.sync()
+        print(f"🔄 Đã đồng bộ thành công {len(synced)} lệnh Slash (/)")
+    except Exception as e:
+        print(f"⚠️ Lỗi đồng bộ lệnh: {e}")
+
     if not check_booster_level.is_running():
         check_booster_level.start()
         print('⏳ Hệ thống auto Tiến Hóa Booster đã được kích hoạt!')
     print('-------------------------------------------')
 
+# --- 4. GIỮ LẠI CƠ CHẾ THẢ TIM CŨ (Chạy song song) ---
 @bot.event
 async def on_raw_reaction_add(payload):
-    if payload.member.bot:
-        return
-
+    if payload.member.bot: return
     if payload.message_id in MESSAGE_CONFIGS:
         guild = bot.get_guild(payload.guild_id)
         member = payload.member
@@ -185,10 +281,8 @@ async def on_raw_reaction_add(payload):
                 roles_to_remove = []
                 for mapped_emoji, mapped_role_id in role_mapping.items():
                     if mapped_emoji != emoji_name: 
-                        try:
-                            await message.remove_reaction(mapped_emoji, member)
-                        except Exception:
-                            pass
+                        try: await message.remove_reaction(mapped_emoji, member)
+                        except Exception: pass
                             
                         old_role = guild.get_role(mapped_role_id)
                         if old_role and old_role in member.roles:
@@ -199,24 +293,20 @@ async def on_raw_reaction_add(payload):
 
                 role_id = role_mapping[emoji_name]
                 new_role = guild.get_role(role_id)
-                if new_role:
-                    await member.add_roles(new_role)
+                if new_role: await member.add_roles(new_role)
         else:
             channel = bot.get_channel(payload.channel_id)
             message = await channel.fetch_message(payload.message_id)
             await message.remove_reaction(payload.emoji, member)
-            try:
-                await member.send("❌ Bạn cần là **Server Booster** để chọn các role đặc biệt này nhé!")
-            except discord.Forbidden:
-                pass
+            try: await member.send("❌ Bạn cần là **Server Booster** để chọn các role đặc biệt này nhé!")
+            except discord.Forbidden: pass
 
 @bot.event
 async def on_raw_reaction_remove(payload):
     if payload.message_id in MESSAGE_CONFIGS:
         guild = bot.get_guild(payload.guild_id)
         member = guild.get_member(payload.user_id)
-        if member is None or member.bot:
-            return
+        if member is None or member.bot: return
 
         config = MESSAGE_CONFIGS[payload.message_id]
         role_mapping = config["mapping"]
@@ -233,18 +323,12 @@ async def on_raw_reaction_remove(payload):
 async def setup(ctx):
     try:
         msg_mau = await ctx.channel.fetch_message(1507323471984722030)
-        for emoji in ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"]:
-            await msg_mau.add_reaction(emoji)
-    except Exception:
-        pass
-
+        for emoji in ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"]: await msg_mau.add_reaction(emoji)
+    except Exception: pass
     try:
         msg_icon = await ctx.channel.fetch_message(1507323572824309780)
-        for emoji in ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]:
-            await msg_icon.add_reaction(emoji)
-    except Exception:
-        pass
-    
+        for emoji in ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]: await msg_icon.add_reaction(emoji)
+    except Exception: pass
     await ctx.send("✅ Đã setup xong các nút thả tim!", delete_after=5)
 
 # === GỌI LỆNH CHẠY ===
