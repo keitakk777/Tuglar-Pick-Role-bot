@@ -57,7 +57,6 @@ BOOSTER_EMOJIS = {
 }
 
 MESSAGE_CONFIGS = {
-    # ------ BẢNG 1: CHỌN MÀU ------
     1507323471984722030: { 
         "type": "Màu",
         "mapping": {
@@ -68,7 +67,6 @@ MESSAGE_CONFIGS = {
             "5️⃣": 1157298499461840906 
         }
     },
-    # ------ BẢNG 2: CHỌN ICON ------
     1507323572824309780: { 
         "type": "Icon",
         "mapping": {
@@ -115,25 +113,24 @@ class BoosterMenuView(discord.ui.View):
         if user_tier >= 1:
             color_options = [
                 discord.SelectOption(label="Gỡ Role Màu", description="Hủy chọn màu hiện tại", value="0", emoji="❌"),
-                # Thay <...:ID...> bằng mã emoji custom của bạn, VD: <:mau_sky:123456789>
-                discord.SelectOption(label="Sky", value="1162545019123666984", emoji="<:ten_emoji_sky:ID_emoji_sky>"),
-                discord.SelectOption(label="Peachy", value="1157298054764974130", emoji="<:ten_emoji_peachy:ID_emoji_peachy>"),
-                discord.SelectOption(label="Carrot", value="1157296480722366555", emoji="<:ten_emoji_carrot:ID_emoji_carrot>"),
-                discord.SelectOption(label="Rose", value="1157297666879926304", emoji="<:ten_emoji_rose:ID_emoji_rose>"),
-                discord.SelectOption(label="Purple", value="1157298499461840906", emoji="<:ten_emoji_purple:ID_emoji_purple>")
+                discord.SelectOption(label="Sky", value="1162545019123666984", emoji="1️⃣"),
+                discord.SelectOption(label="Peachy", value="1157298054764974130", emoji="2️⃣"),
+                discord.SelectOption(label="Carrot", value="1157296480722366555", emoji="3️⃣"),
+                discord.SelectOption(label="Rose", value="1157297666879926304", emoji="4️⃣"),
+                discord.SelectOption(label="Purple", value="1157298499461840906", emoji="5️⃣")
             ]
             color_ids = [1162545019123666984, 1157298054764974130, 1157296480722366555, 1157297666879926304, 1157298499461840906]
-            self.add_item(BoosterRoleSelect("<:IR_Booster_I:1509974377481895966> Solid Color Pack", color_options, color_ids))
+            # Placeholder không hỗ trợ custom emoji nên dùng icon vẽ mặc định
+            self.add_item(BoosterRoleSelect("🎨 Solid Color Pack", color_options, color_ids))
             
         # ====== CHỈNH SỬA EMOJI Ở MENU ICON ======
         if user_tier >= 2:
             icon_options = [
                 discord.SelectOption(label="Gỡ Role Icon", description="Hủy chọn icon hiện tại", value="0", emoji="❌"),
-                # Thay <...:ID...> bằng mã emoji custom của bạn, VD: <:icon_holo:123456789>
                 discord.SelectOption(label="Galactic Chrome", value="1164764867769667664", emoji="<:Staff_FA:1509995186644713646>"),
-                discord.SelectOption(label="Holo", value="1164766440335876126", emoji="<:ten_emoji_holo:ID_emoji_holo>"),
-                discord.SelectOption(label="Sakura", value="1164946156858650635", emoji="<:ten_emoji_sakura:ID_emoji_sakura>"),
-                discord.SelectOption(label="Sherbet Dreamsicle", value="1164946570920337538", emoji="<:ten_emoji_sherbet:ID_emoji_sherbet>")
+                discord.SelectOption(label="Holo", value="1164766440335876126", emoji="2️⃣"),
+                discord.SelectOption(label="Sakura", value="1164946156858650635", emoji="3️⃣"),
+                discord.SelectOption(label="Sherbet Dreamsicle", value="1164946570920337538", emoji="4️⃣")
             ]
             icon_ids = [1164764867769667664, 1164766440335876126, 1164946156858650635, 1164946570920337538]
             self.add_item(BoosterRoleSelect("✨ Chọn Role Icon (Đã mở khóa ở LV 2)", icon_options, icon_ids))
@@ -248,7 +245,7 @@ async def check_booster_level():
                 await member.remove_roles(*roles_to_remove)
 
 # --- 2. HỆ THỐNG BÁO ĐỘNG REAL-TIME KHI HỦY BOOST ---
-@event
+@bot.event
 async def on_member_update(before, after):
     if before.premium_since is not None and after.premium_since is None:
         all_tier_roles = list(BOOSTER_TIERS.values())
