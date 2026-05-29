@@ -126,12 +126,13 @@ class BoosterMenuView(discord.ui.View):
         if user_tier >= 2:
             icon_options = [
                 discord.SelectOption(label="Gỡ Role Icon", description="Hủy chọn icon hiện tại", value="0", emoji="❌"),
-                discord.SelectOption(label="Galactic Chrome", value="1164764867769667664", emoji="<:Staff_FA:1509995186644713646>"),
-                discord.SelectOption(label="Holo", value="1164766440335876126", emoji="<:ten_emoji_holo:ID_emoji_holo>"),
-                discord.SelectOption(label="Sakura", value="1164946156858650635", emoji="<:ten_emoji_sakura:ID_emoji_sakura>"),
-                discord.SelectOption(label="Sherbet Dreamsicle", value="1164946570920337538", emoji="<:ten_emoji_sherbet:ID_emoji_sherbet>")
+                discord.SelectOption(label="Mint", value="1164764867769667664", emoji="<:IC_1stHeart:1510016047896334536>"),
+                discord.SelectOption(label="xLemon", value="1164766440335876126", emoji="<:IC_xLemon:1510016065122336929>"),
+                discord.SelectOption(label="1stHeart", value="1510012176876699768", emoji="<:IC_1stHeart:1510016047896334536>"),
+                discord.SelectOption(label="Cyber-20xx", value="1164946570920337538", emoji="<:IC_Cyber20xx:1510016058613043230>"),
+                discord.SelectOption(label="TraDaoCamSa", value="1164946156858650635", emoji="<:ten_emoji_sherbet:ID_emoji_sherbet>")
             ]
-            icon_ids = [1164764867769667664, 1164766440335876126, 1164946156858650635, 1164946570920337538]
+            icon_ids = [1164764867769667664, 1164766440335876126, 1164946156858650635, 1164946156858650635]
             self.add_item(BoosterRoleSelect("✨ Chọn Role Icon (Đã mở khóa: Booster I)", icon_options, icon_ids))
 
 @bot.tree.command(name="booster", description="Mở giao diện chọn role độc quyền dành cho Server Booster")
