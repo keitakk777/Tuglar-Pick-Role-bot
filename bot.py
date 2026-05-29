@@ -41,8 +41,7 @@ ALL_COLOR_ROLES = [
 ]
 ALL_ICON_ROLES = [] 
 
-# ROLE FREE DÀNH CHO TẤT CẢ MỌI NGƯỜI (Điền ID role Ping, Game, Giới tính... vào đây)
-FREE_PING_ROLES = [111111111111111111, 222222222222222222] 
+FREE_PING_ROLES = [1127245463305855017, 1127525871104839762, 1247481623906226258] 
 # ------------------------------------------
 
 BOOSTER_TIERS = {
@@ -90,6 +89,15 @@ class GenericRoleSelect(discord.ui.Select):
     def __init__(self, placeholder, options, role_group_ids, max_val=1):
         super().__init__(placeholder=placeholder, min_values=1, max_values=max_val, options=options)
         self.role_group_ids = role_group_ids
+        
+    # Hàm con để lấy ID của Emoji từ tùy chọn đã chọn
+    def get_selected_emoji(self, value_id):
+        for option in self.options:
+            if option.value == value_id:
+                if option.emoji.id:
+                    return f"<:{option.emoji.name}:{option.emoji.id}>"
+                return option.emoji.name
+        return "✨"
 
     async def callback(self, interaction: discord.Interaction):
         guild = interaction.guild
@@ -98,20 +106,44 @@ class GenericRoleSelect(discord.ui.Select):
         # Nếu là Menu gỡ role tự động (chỉ chọn 1)
         if self.max_values == 1:
             selected_role_id = int(self.values[0])
-            roles_to_remove = [guild.get_role(r) for r in self.role_group_ids if guild.get_role(r) and guild.get_role(r) in member.roles]
-            if roles_to_remove:
-                await member.remove_roles(*roles_to_remove)
-                
+            selected_emoji_str = self.get_selected_emoji(self.values[0])
+            
+            # --- XỬ LÝ NÚT GỠ TẤT CẢ (id = 0) ---
             if selected_role_id == 0:
-                await interaction.response.send_message("🗑️ Đã thu hồi role thành công!", ephemeral=True)
+                roles_to_remove = [guild.get_role(r) for r in self.role_group_ids if guild.get_role(r) and guild.get_role(r) in member.roles]
+                if roles_to_remove:
+                    await member.remove_roles(*roles_to_remove)
+                embed = discord.Embed(description="🗑️ Đã thu hồi role thành công!", color=0xff4757)
+                await interaction.response.send_message(embed=embed, ephemeral=True)
                 return
                 
             new_role = guild.get_role(selected_role_id)
-            if new_role:
-                await member.add_roles(new_role)
-                await interaction.response.send_message(f"✨ Bạn đã trang bị role: **{new_role.name}**", ephemeral=True)
+            if not new_role:
+                embed = discord.Embed(description="❌ Lỗi: Role không tồn tại.", color=0xff4757)
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
+
+            # --- KIỂM TRA ĐANG MẶC ROLE ĐÓ HAY KHÔNG ---
+            if new_role in member.roles:
+                # Nếu đang mặc -> Tiến hành lột ra
+                await member.remove_roles(new_role)
+                embed = discord.Embed(
+                    title=f"{selected_emoji_str} Bạn đã gỡ bỏ role: {new_role.name}", 
+                    color=0xff4757 # Màu đỏ báo hiệu gỡ role
+                )
+                await interaction.response.send_message(embed=embed, ephemeral=True)
             else:
-                await interaction.response.send_message("❌ Lỗi: Role không tồn tại.", ephemeral=True)
+                # Nếu chưa mặc -> Gỡ role cũ (nếu có) và mặc role mới vào
+                roles_to_remove = [guild.get_role(r) for r in self.role_group_ids if guild.get_role(r) and guild.get_role(r) in member.roles]
+                if roles_to_remove:
+                    await member.remove_roles(*roles_to_remove)
+                    
+                await member.add_roles(new_role)
+                embed = discord.Embed(
+                    title=f"{selected_emoji_str} Bạn đã trang bị role: {new_role.name}", 
+                    color=0x2ecc71 # Màu xanh báo hiệu mặc thành công
+                )
+                await interaction.response.send_message(embed=embed, ephemeral=True)
 
 class ClearBoosterRolesButton(discord.ui.Button):
     def __init__(self, all_pickable_role_ids):
@@ -125,17 +157,19 @@ class ClearBoosterRolesButton(discord.ui.Button):
         
         if roles_to_remove:
             await member.remove_roles(*roles_to_remove)
-            await interaction.response.send_message("🗑️ Đã gỡ toàn bộ Role Màu & Icon thành công!", ephemeral=True)
+            embed = discord.Embed(description="🗑️ Đã gỡ toàn bộ Role Màu & Icon thành công!", color=0xff4757)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
-            await interaction.response.send_message("⚠️ Bạn hiện không trang bị Role Màu hay Icon nào để gỡ.", ephemeral=True)
+            embed = discord.Embed(description="⚠️ Bạn hiện không trang bị Role Màu hay Icon nào để gỡ.", color=0xf1c40f)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
 
 class ProfileMenuView(discord.ui.View):
     def __init__(self, user_tier):
         super().__init__(timeout=300) 
         
-        # ====== 1. MENU ROLE FREE (AI CŨNG THẤY) ======
-        # (Bạn sửa ID và Tên ở đây cho phù hợp với server nhé)
+        # ====== 1. MENU ROLE FREE ======
         free_options = [
+            discord.SelectOption(label="Hủy nhận Thông báo", description="Không nhận ping nữa", value="0", emoji="🔕"),
             discord.SelectOption(label="Ping Server", description="Nhận thông báo server", value="1127245463305855017", emoji="<:P_Server:1510029791753928827>"),
             discord.SelectOption(label="Ping Event", description="Nhận thông báo event mới", value="1127525871104839762", emoji="<:P_Event:1510029785772982383>"),
             discord.SelectOption(label="Ping Giveaway", description="Nhận thông báo giveaway", value="1247481623906226258", emoji="<:P_Giveaway:1510029787878658228>")
@@ -153,7 +187,6 @@ class ProfileMenuView(discord.ui.View):
                 discord.SelectOption(label="Purple", value="1157298499461840906", emoji="<:IC_Purple:1510004463362900229>"),
                 discord.SelectOption(label="Peachy", value="1157298054764974130", emoji="<:IC_Peachy:1509997745916612768>")
             ]
-            color_ids = [1162545019123666984, 1157298054764974130, 1157296480722366555, 1157297666879926304, 1157298499461840906]
             all_booster_ids.extend(ALL_COLOR_ROLES)
             self.add_item(GenericRoleSelect("🎨 Color Pack - Booster Gốc", color_options, ALL_COLOR_ROLES))
             
@@ -168,9 +201,9 @@ class ProfileMenuView(discord.ui.View):
                 discord.SelectOption(label="TraDaoCamSa", value="1164946156858650635", emoji="<:IC_TraDaoCamSa:1510016063125852410>")
             ]
             all_booster_ids.extend(ALL_ICON_ROLES)
-            self.add_item(GenericRoleSelect("🎨 Color Pack - Booster I", icon_options, ALL_COLOR_ROLES)) # Tạm thời dùng Color Roles theo setup của bạn
+            self.add_item(GenericRoleSelect("🎨 Color Pack - Booster I", icon_options, ALL_COLOR_ROLES)) 
             
-        # Nút Gỡ Booster (Chỉ hiện nếu có mở khóa Booster Menu)
+        # Nút Gỡ Booster
         if all_booster_ids:
             self.add_item(ClearBoosterRolesButton(list(set(all_booster_ids))))
 
@@ -208,7 +241,7 @@ async def profile_cmd(interaction: discord.Interaction):
         embed = discord.Embed(
             title="👤 Hồ Sơ Của Bạn | Thành Viên Thường",
             description="Chào mừng bạn đến với mục quản lý hồ sơ!\n\n👇 **Bạn có thể nhận các Role Cơ Bản ở menu bên dưới.**\n\n✨ **Đặc quyền Độc Quyền:** Boost Server để mở khóa các pack role độc đáo cạnh tên bạn nhé!",
-            color=0x3498db # Màu xanh member thường
+            color=0x3498db 
         )
         embed.set_thumbnail(url=member.display_avatar.url)
         view = ProfileMenuView(user_tier)
@@ -241,7 +274,7 @@ async def profile_cmd(interaction: discord.Interaction):
     embed = discord.Embed(
         title=f"💎 Hồ Sơ Độc Quyền | {tier_title}",
         description=f"Cảm ơn bạn đã đồng hành cùng Server! Dưới đây là các phần thưởng bạn đã mở khóa.\n\n**Huy hiệu Booster:** {current_emoji}\n{progress_text}\n\n👇 **Quản lý Role Free và Đồ Booster ở menu bên dưới:**",
-        color=0xff73fa # Màu hồng Nitro
+        color=0xff73fa 
     )
     embed.set_thumbnail(url=member.display_avatar.url)
     
