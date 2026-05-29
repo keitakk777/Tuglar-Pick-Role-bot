@@ -30,7 +30,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 # Dùng biến môi trường để giấu Token an toàn trên Render
 TOKEN = os.environ.get('DISCORD_TOKEN') 
 
-SERVER_ID = 123456789012345678 # BẮT BUỘC: Thay bằng ID Server Discord của bạn
+SERVER_ID = 995320755002814514 # BẮT BUỘC: Thay bằng ID Server Discord của bạn
 BOOSTER_ROLE_ID = 1000062456007249930 # ID role Server Booster gốc
 
 # Cấu hình Cấp bậc Booster (Mốc Số Ngày : ID Role Tương Ứng)
