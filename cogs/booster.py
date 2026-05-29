@@ -286,12 +286,10 @@ class BoosterCog(commands.Cog):
 ## <@&1169623255297032272> <:winterlands2023:1510063146583199994>
 > - Ra mắt: <t:1698771600:R>
 > - Cách nhận: **Tưới cây thông noel 🎄**
-> - Đặc quyền: <:perk_collection:1193667977405534218> BST Winterlands 2023
 > - Sở hữu: `{count_role(1169623255297032272)}`
 ## <@&1189375452603756645> <:tet2024:1510063134415650946> 
 > - Ra mắt: <t:1706720400:R>
-> - Cách nhận: **Trang trí Tết - Đổi mảnh 🧩**
-> - Đặc quyền: <:perk_collection:1193667977405534218> BST Tết 2024
+> - Cách nhận: **Đổi mảnh 🧩 - Sự kiện Trang trí Tết 2024**
 > - Sở hữu: `{count_role(1189375452603756645)}`"""
         
         await interaction.response.send_message(content, ephemeral=False)
