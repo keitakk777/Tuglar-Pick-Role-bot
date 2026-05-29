@@ -34,7 +34,6 @@ SERVER_ID = 995320755002814514 # ID Server Tuglar
 BOOSTER_ROLE_ID = 1000062456007249930 # ID role Server Booster gốc
 LOG_CHANNEL_ID = 995612550383292458 # Kênh gửi thông báo level up
 
-# Cấu hình Cấp bậc Booster (Mốc Số Ngày : ID Role Tương Ứng)
 BOOSTER_TIERS = {
     7: 1509967931675640039,  # Booster I
     14: 1509970643993628672, # Booster II
@@ -112,26 +111,29 @@ class BoosterMenuView(discord.ui.View):
     def __init__(self, user_tier):
         super().__init__(timeout=300) 
         
-        # Mở khóa các Menu theo Cấp bậc (LV)
+        # ====== CHỈNH SỬA EMOJI Ở MENU MÀU ======
         if user_tier >= 1:
             color_options = [
                 discord.SelectOption(label="Gỡ Role Màu", description="Hủy chọn màu hiện tại", value="0", emoji="❌"),
-                discord.SelectOption(label="Sky", value="1162545019123666984", emoji="1️⃣"),
-                discord.SelectOption(label="Peachy", value="1157298054764974130", emoji="2️⃣"),
-                discord.SelectOption(label="Carrot", value="1157296480722366555", emoji="3️⃣"),
-                discord.SelectOption(label="Rose", value="1157297666879926304", emoji="4️⃣"),
-                discord.SelectOption(label="Purple", value="1157298499461840906", emoji="5️⃣")
+                # Thay <...:ID...> bằng mã emoji custom của bạn, VD: <:mau_sky:123456789>
+                discord.SelectOption(label="Sky", value="1162545019123666984", emoji="<:ten_emoji_sky:ID_emoji_sky>"),
+                discord.SelectOption(label="Peachy", value="1157298054764974130", emoji="<:ten_emoji_peachy:ID_emoji_peachy>"),
+                discord.SelectOption(label="Carrot", value="1157296480722366555", emoji="<:ten_emoji_carrot:ID_emoji_carrot>"),
+                discord.SelectOption(label="Rose", value="1157297666879926304", emoji="<:ten_emoji_rose:ID_emoji_rose>"),
+                discord.SelectOption(label="Purple", value="1157298499461840906", emoji="<:ten_emoji_purple:ID_emoji_purple>")
             ]
             color_ids = [1162545019123666984, 1157298054764974130, 1157296480722366555, 1157297666879926304, 1157298499461840906]
-            self.add_item(BoosterRoleSelect("🎨 Chọn Role Màu (Đã mở khóa ở LV 1)", color_options, color_ids))
+            self.add_item(BoosterRoleSelect("<:IR_Booster_I:1509974377481895966> Solid Color Pack", color_options, color_ids))
             
+        # ====== CHỈNH SỬA EMOJI Ở MENU ICON ======
         if user_tier >= 2:
             icon_options = [
                 discord.SelectOption(label="Gỡ Role Icon", description="Hủy chọn icon hiện tại", value="0", emoji="❌"),
-                discord.SelectOption(label="Galactic Chrome", value="1164764867769667664", emoji="1️⃣"),
-                discord.SelectOption(label="Holo", value="1164766440335876126", emoji="2️⃣"),
-                discord.SelectOption(label="Sakura", value="1164946156858650635", emoji="3️⃣"),
-                discord.SelectOption(label="Sherbet Dreamsicle", value="1164946570920337538", emoji="4️⃣")
+                # Thay <...:ID...> bằng mã emoji custom của bạn, VD: <:icon_holo:123456789>
+                discord.SelectOption(label="Galactic Chrome", value="1164764867769667664", emoji="<:Staff_FA:1509995186644713646>"),
+                discord.SelectOption(label="Holo", value="1164766440335876126", emoji="<:ten_emoji_holo:ID_emoji_holo>"),
+                discord.SelectOption(label="Sakura", value="1164946156858650635", emoji="<:ten_emoji_sakura:ID_emoji_sakura>"),
+                discord.SelectOption(label="Sherbet Dreamsicle", value="1164946570920337538", emoji="<:ten_emoji_sherbet:ID_emoji_sherbet>")
             ]
             icon_ids = [1164764867769667664, 1164766440335876126, 1164946156858650635, 1164946570920337538]
             self.add_item(BoosterRoleSelect("✨ Chọn Role Icon (Đã mở khóa ở LV 2)", icon_options, icon_ids))
@@ -153,7 +155,6 @@ async def booster_cmd(interaction: discord.Interaction):
     user_tier = 0
     current_emoji = "✨"
     
-    # Tìm cấp độ Booster cao nhất của user
     for role in member.roles:
         if role.id in tier_levels:
             if tier_levels[role.id] > user_tier:
@@ -164,20 +165,18 @@ async def booster_cmd(interaction: discord.Interaction):
         await interaction.response.send_message("❌ Bạn cần đạt ít nhất cấp **Booster I** (Boost 1 tuần) để mở khóa giao diện này!", ephemeral=True)
         return
         
-    # Tính toán ngày Boost và tiến trình lên cấp
     days_boosted = 0
     if member.premium_since:
         now = discord.utils.utcnow()
         days_boosted = (now - member.premium_since).days
         
-    milestones = sorted(BOOSTER_TIERS.keys()) # Lấy danh sách các mốc: 7, 14, 21...
+    milestones = sorted(BOOSTER_TIERS.keys()) 
     next_milestone = None
     for m in milestones:
         if days_boosted < m:
             next_milestone = m
             break
             
-    # Tạo text cho Thanh Tiến Trình (Progress Bar)
     if next_milestone:
         percent = min(100, int((days_boosted / next_milestone) * 100))
         filled = int(percent / 10)
@@ -186,11 +185,10 @@ async def booster_cmd(interaction: discord.Interaction):
     else:
         progress_text = "**Tiến độ nâng cấp:** Đã đạt cấp độ Tối Đa 🏆\n`[██████████] 100%`"
 
-    # Xây dựng Giao diện Embed
     embed = discord.Embed(
         title=f"Kho Đồ Độc Quyền | Booster LV {user_tier}",
         description=f"Cảm ơn bạn đã đồng hành cùng Server! Dưới đây là các phần thưởng bạn đã mở khóa.\n\n**Huy hiệu Booster:** {current_emoji}\n{progress_text}\n\n👇 **Sử dụng menu bên dưới để trang bị role:**",
-        color=0xff73fa # Màu hồng chuẩn của Nitro
+        color=0xff73fa 
     )
     embed.set_thumbnail(url=member.display_avatar.url)
     
@@ -250,7 +248,7 @@ async def check_booster_level():
                 await member.remove_roles(*roles_to_remove)
 
 # --- 2. HỆ THỐNG BÁO ĐỘNG REAL-TIME KHI HỦY BOOST ---
-@bot.event
+@event
 async def on_member_update(before, after):
     if before.premium_since is not None and after.premium_since is None:
         all_tier_roles = list(BOOSTER_TIERS.values())
