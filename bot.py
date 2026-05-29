@@ -82,7 +82,7 @@ MESSAGE_CONFIGS = {
 }
 # ============================================
 
-# === GIAO DIỆN LỆNH /BOOSTER (MỚI) ===
+# === GIAO DIỆN LỆNH /BOOSTER VỚI EMBED XỊN XÒ ===
 class BoosterRoleSelect(discord.ui.Select):
     def __init__(self, placeholder, options, role_group_ids):
         super().__init__(placeholder=placeholder, min_values=1, max_values=1, options=options)
@@ -93,17 +93,14 @@ class BoosterRoleSelect(discord.ui.Select):
         guild = interaction.guild
         member = interaction.user
         
-        # 1. Quét và thu hồi MỌI role cũ trong nhóm này mà user đang có
         roles_to_remove = [guild.get_role(r) for r in self.role_group_ids if guild.get_role(r) and guild.get_role(r) in member.roles]
         if roles_to_remove:
             await member.remove_roles(*roles_to_remove)
             
-        # Nếu user chọn "Gỡ Role" (id = 0)
         if selected_role_id == 0:
             await interaction.response.send_message("🗑️ Đã thu hồi role thành công!", ephemeral=True)
             return
             
-        # 2. Cấp role mới
         new_role = guild.get_role(selected_role_id)
         if new_role:
             await member.add_roles(new_role)
@@ -113,9 +110,9 @@ class BoosterRoleSelect(discord.ui.Select):
 
 class BoosterMenuView(discord.ui.View):
     def __init__(self, user_tier):
-        super().__init__(timeout=300) # Menu tự động hết hạn sau 5 phút
+        super().__init__(timeout=300) 
         
-        # ====== MENU LV 1: CHỌN MÀU ======
+        # Mở khóa các Menu theo Cấp bậc (LV)
         if user_tier >= 1:
             color_options = [
                 discord.SelectOption(label="Gỡ Role Màu", description="Hủy chọn màu hiện tại", value="0", emoji="❌"),
@@ -126,9 +123,8 @@ class BoosterMenuView(discord.ui.View):
                 discord.SelectOption(label="Purple", value="1157298499461840906", emoji="5️⃣")
             ]
             color_ids = [1162545019123666984, 1157298054764974130, 1157296480722366555, 1157297666879926304, 1157298499461840906]
-            self.add_item(BoosterRoleSelect("🎨 Chọn Role Màu (Mở khóa LV 1)", color_options, color_ids))
+            self.add_item(BoosterRoleSelect("🎨 Chọn Role Màu (Đã mở khóa ở LV 1)", color_options, color_ids))
             
-        # ====== MENU LV 2: CHỌN ICON ======
         if user_tier >= 2:
             icon_options = [
                 discord.SelectOption(label="Gỡ Role Icon", description="Hủy chọn icon hiện tại", value="0", emoji="❌"),
@@ -138,44 +134,69 @@ class BoosterMenuView(discord.ui.View):
                 discord.SelectOption(label="Sherbet Dreamsicle", value="1164946570920337538", emoji="4️⃣")
             ]
             icon_ids = [1164764867769667664, 1164766440335876126, 1164946156858650635, 1164946570920337538]
-            self.add_item(BoosterRoleSelect("✨ Chọn Role Icon (Mở khóa LV 2)", icon_options, icon_ids))
-            
-        # Bạn có thể copy và tạo thêm các MENU LV 3, LV 4 tương tự ở đây sau này!
+            self.add_item(BoosterRoleSelect("✨ Chọn Role Icon (Đã mở khóa ở LV 2)", icon_options, icon_ids))
 
 @bot.tree.command(name="booster", description="Mở giao diện chọn role độc quyền dành cho Server Booster")
 async def booster_cmd(interaction: discord.Interaction):
-    # Khai báo bản đồ cấp bậc (Booster I = LV1, Booster II = LV2...)
     tier_levels = {
-        1509967931675640039: 1, # Booster I
-        1509970643993628672: 2, # Booster II
-        1509970708850020523: 3, # Booster III
-        1509970736767438879: 4, # Booster IV
-        1509970770305224918: 5, # Booster V
-        1509970819932094584: 6, # Booster VI
-        1509970853192798259: 7, # Booster VII
-        1509962710928982288: 8  # Booster VIII
+        1509967931675640039: 1, 
+        1509970643993628672: 2, 
+        1509970708850020523: 3, 
+        1509970736767438879: 4, 
+        1509970770305224918: 5, 
+        1509970819932094584: 6, 
+        1509970853192798259: 7, 
+        1509962710928982288: 8  
     }
     
-    # Kiểm tra xem user đang ở LV mấy
+    member = interaction.user
     user_tier = 0
-    for role in interaction.user.roles:
+    current_emoji = "✨"
+    
+    # Tìm cấp độ Booster cao nhất của user
+    for role in member.roles:
         if role.id in tier_levels:
             if tier_levels[role.id] > user_tier:
                 user_tier = tier_levels[role.id]
+                current_emoji = BOOSTER_EMOJIS.get(role.id, "✨")
                 
-    # Nếu chưa đạt ít nhất Booster I (LV 1)
     if user_tier == 0:
         await interaction.response.send_message("❌ Bạn cần đạt ít nhất cấp **Booster I** (Boost 1 tuần) để mở khóa giao diện này!", ephemeral=True)
         return
         
-    view = BoosterMenuView(user_tier)
-    await interaction.response.send_message(
-        f"🎉 **GIAO DIỆN ĐỘC QUYỀN (Bạn đang ở Booster LV {user_tier})**\nHãy chọn các role bạn muốn trang bị ở menu bên dưới:", 
-        view=view, 
-        ephemeral=True
-    )
-# ==============================================
+    # Tính toán ngày Boost và tiến trình lên cấp
+    days_boosted = 0
+    if member.premium_since:
+        now = discord.utils.utcnow()
+        days_boosted = (now - member.premium_since).days
+        
+    milestones = sorted(BOOSTER_TIERS.keys()) # Lấy danh sách các mốc: 7, 14, 21...
+    next_milestone = None
+    for m in milestones:
+        if days_boosted < m:
+            next_milestone = m
+            break
+            
+    # Tạo text cho Thanh Tiến Trình (Progress Bar)
+    if next_milestone:
+        percent = min(100, int((days_boosted / next_milestone) * 100))
+        filled = int(percent / 10)
+        bar = "█" * filled + "░" * (10 - filled)
+        progress_text = f"**Tiến độ lên cấp tiếp theo:** {days_boosted} / {next_milestone} ngày\n`[{bar}] {percent}%`"
+    else:
+        progress_text = "**Tiến độ nâng cấp:** Đã đạt cấp độ Tối Đa 🏆\n`[██████████] 100%`"
 
+    # Xây dựng Giao diện Embed
+    embed = discord.Embed(
+        title=f"Kho Đồ Độc Quyền | Booster LV {user_tier}",
+        description=f"Cảm ơn bạn đã đồng hành cùng Server! Dưới đây là các phần thưởng bạn đã mở khóa.\n\n**Huy hiệu Booster:** {current_emoji}\n{progress_text}\n\n👇 **Sử dụng menu bên dưới để trang bị role:**",
+        color=0xff73fa # Màu hồng chuẩn của Nitro
+    )
+    embed.set_thumbnail(url=member.display_avatar.url)
+    
+    view = BoosterMenuView(user_tier)
+    await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+# ==============================================
 
 # --- 1. VÒNG LẶP TIẾN HÓA & DỌN DẸP ROLE ĐỊNH KỲ ---
 @tasks.loop(hours=24)
@@ -248,7 +269,6 @@ async def on_member_update(before, after):
 async def on_ready():
     print(f'✅ Bot {bot.user} đã sẵn sàng phục vụ server!')
     
-    # Kích hoạt đồng bộ các lệnh Slash Command (như /booster) lên Discord
     try:
         synced = await bot.tree.sync()
         print(f"🔄 Đã đồng bộ thành công {len(synced)} lệnh Slash (/)")
