@@ -80,6 +80,8 @@ MESSAGE_CONFIGS = {
 # ============================================
 
 # === GIAO DIỆN LỆNH /BOOSTER VỚI EMBED XỊN XÒ ===
+
+# Lớp chức năng cho Menu xổ xuống
 class BoosterRoleSelect(discord.ui.Select):
     def __init__(self, placeholder, options, role_group_ids):
         super().__init__(placeholder=placeholder, min_values=1, max_values=1, options=options)
@@ -90,6 +92,7 @@ class BoosterRoleSelect(discord.ui.Select):
         guild = interaction.guild
         member = interaction.user
         
+        # Tự động gỡ các role cũ cùng loại (đảm bảo chỉ 1 màu hoặc 1 icon)
         roles_to_remove = [guild.get_role(r) for r in self.role_group_ids if guild.get_role(r) and guild.get_role(r) in member.roles]
         if roles_to_remove:
             await member.remove_roles(*roles_to_remove)
@@ -105,14 +108,35 @@ class BoosterRoleSelect(discord.ui.Select):
         else:
             await interaction.response.send_message("❌ Lỗi: Role không tồn tại trên hệ thống.", ephemeral=True)
 
+# Lớp chức năng cho Nút Bấm Gỡ Toàn Bộ
+class ClearAllRolesButton(discord.ui.Button):
+    def __init__(self, all_pickable_role_ids):
+        # Thiết lập nút màu đỏ (danger) nằm ở hàng thứ 2 (row=2) để không bị đè lên menu
+        super().__init__(style=discord.ButtonStyle.danger, label="Gỡ Toàn Bộ Role", emoji="🗑️", row=2)
+        self.all_pickable_role_ids = all_pickable_role_ids
+
+    async def callback(self, interaction: discord.Interaction):
+        guild = interaction.guild
+        member = interaction.user
+        
+        roles_to_remove = [guild.get_role(r) for r in self.all_pickable_role_ids if guild.get_role(r) and guild.get_role(r) in member.roles]
+        
+        if roles_to_remove:
+            await member.remove_roles(*roles_to_remove)
+            await interaction.response.send_message("🗑️ Đã gỡ toàn bộ Role Màu & Icon thành công!", ephemeral=True)
+        else:
+            await interaction.response.send_message("⚠️ Bạn hiện không trang bị Role Màu hay Icon nào để gỡ.", ephemeral=True)
+
 class BoosterMenuView(discord.ui.View):
     def __init__(self, user_tier):
         super().__init__(timeout=300) 
         
+        all_pickable_ids = [] # Danh sách tổng hợp tất cả ID role để ném vào Nút gỡ toàn bộ
+        
         # ====== MENU MÀU (DÀNH CHO BOOSTER GỐC TRỞ LÊN) ======
         if user_tier >= 1:
             color_options = [
-                discord.SelectOption(label="Gỡ Role Màu", description="Hủy chọn màu hiện tại", value="0", emoji="❌"),
+                discord.SelectOption(label="Gỡ Role Màu", description="Hủy chọn role hiện tại", value="0", emoji="❌"),
                 discord.SelectOption(label="Sky", value="1162545019123666984", emoji="<:IC_Sky:1509998906723799191>"),
                 discord.SelectOption(label="Carrot", value="1157296480722366555", emoji="<:IC_Carrot:1510003170661892399>"),
                 discord.SelectOption(label="Rose", value="1157297666879926304", emoji="<:IC_Rose:1510003959652155556>"),
@@ -120,12 +144,13 @@ class BoosterMenuView(discord.ui.View):
                 discord.SelectOption(label="Peachy", value="1157298054764974130", emoji="<:IC_Peachy:1509997745916612768>")
             ]
             color_ids = [1162545019123666984, 1157298054764974130, 1157296480722366555, 1157297666879926304, 1157298499461840906]
-            self.add_item(BoosterRoleSelect("🎨 Chọn Role Màu (Đã mở khóa: Booster Gốc)", color_options, color_ids))
+            all_pickable_ids.extend(color_ids)
+            self.add_item(BoosterRoleSelect("🎨 Color Pack - Booster 0", color_options, color_ids))
             
         # ====== MENU ICON (DÀNH CHO BOOSTER I TRỞ LÊN) ======
         if user_tier >= 2:
             icon_options = [
-                discord.SelectOption(label="Gỡ Role Icon", description="Hủy chọn icon hiện tại", value="0", emoji="❌"),
+                discord.SelectOption(label="Gỡ Role Màu", description="Hủy chọn role hiện tại", value="0", emoji="❌"),
                 discord.SelectOption(label="Mint", value="1164764867769667664", emoji="<:IC_1stHeart:1510016047896334536>"),
                 discord.SelectOption(label="xLemon", value="1164766440335876126", emoji="<:IC_xLemon:1510016065122336929>"),
                 discord.SelectOption(label="1stHeart", value="1510012176876699768", emoji="<:IC_1stHeart:1510016047896334536>"),
@@ -133,21 +158,25 @@ class BoosterMenuView(discord.ui.View):
                 discord.SelectOption(label="TraDaoCamSa", value="1164946156858650635", emoji="<:IC_TraDaoCamSa:1510016063125852410>")
             ]
             icon_ids = [1164764867769667664, 1164766440335876126, 1510012176876699768, 1164946570920337538, 1164946156858650635]
-            self.add_item(BoosterRoleSelect("✨ Chọn Role Icon (Đã mở khóa: Booster I)", icon_options, icon_ids))
+            all_pickable_ids.extend(icon_ids)
+            self.add_item(BoosterRoleSelect("🎨 Color Pack - Booster I", icon_options, icon_ids))
+            
+        # Thêm Nút Gỡ Toàn Bộ nếu có ít nhất 1 menu hiện ra
+        if all_pickable_ids:
+            self.add_item(ClearAllRolesButton(all_pickable_ids))
 
 @bot.tree.command(name="booster", description="Mở giao diện chọn role độc quyền dành cho Server Booster")
 async def booster_cmd(interaction: discord.Interaction):
-    # Cập nhật lại bản đồ cấp độ: Booster Gốc là Cấp 1, Booster I là Cấp 2...
     tier_levels = {
-        BOOSTER_ROLE_ID: 1,      # Role Booster Gốc (mới thêm vào)
-        1509967931675640039: 2,  # Booster I
-        1509970643993628672: 3,  # Booster II
-        1509970708850020523: 4,  # Booster III
-        1509970736767438879: 5,  # Booster IV
-        1509970770305224918: 6,  # Booster V
-        1509970819932094584: 7,  # Booster VI
-        1509970853192798259: 8,  # Booster VII
-        1509962710928982288: 9   # Booster VIII
+        BOOSTER_ROLE_ID: 1,      
+        1509967931675640039: 2,  
+        1509970643993628672: 3,  
+        1509970708850020523: 4,  
+        1509970736767438879: 5,  
+        1509970770305224918: 6,  
+        1509970819932094584: 7,  
+        1509970853192798259: 8,  
+        1509962710928982288: 9   
     }
     
     tier_names = {
@@ -164,13 +193,12 @@ async def booster_cmd(interaction: discord.Interaction):
     
     member = interaction.user
     user_tier = 0
-    current_emoji = "💖" # Thay đổi emoji mặc định thành tim hồng cho Booster Gốc
+    current_emoji = "💖" 
     
     for role in member.roles:
         if role.id in tier_levels:
             if tier_levels[role.id] > user_tier:
                 user_tier = tier_levels[role.id]
-                # Nếu là Booster Gốc (ko có trong dict EMOJI), nó sẽ lấy tim hồng
                 current_emoji = BOOSTER_EMOJIS.get(role.id, "💖")
                 
     if user_tier == 0:
@@ -197,7 +225,6 @@ async def booster_cmd(interaction: discord.Interaction):
     else:
         progress_text = "**Tiến độ nâng cấp:** Đã đạt cấp độ Tối Đa 🏆\n`[██████████] 100%`"
 
-    # Lấy tên cấp bậc hiển thị lên UI
     tier_title = tier_names.get(user_tier, "Booster")
 
     embed = discord.Embed(
