@@ -3,6 +3,8 @@ from discord.ext import commands, tasks
 from discord import app_commands
 from config import *
 
+# === CÁC LỚP GIAO DIỆN (UI VIEWS) ===
+
 class GenericRoleSelect(discord.ui.Select):
     def __init__(self, placeholder, options, role_group_ids):
         super().__init__(placeholder=placeholder, min_values=1, max_values=1, options=options)
@@ -106,7 +108,49 @@ class ProfileMenuView(discord.ui.View):
         if all_booster_ids:
             self.add_item(ClearBoosterRolesButton(list(set(all_booster_ids))))
 
+# LỚP GIAO DIỆN CHIA TRANG CHO SỔ TAY INDEX
+class IndexPaginationView(discord.ui.View):
+    def __init__(self, pages, bot_avatar_url):
+        super().__init__(timeout=180) 
+        self.pages = pages
+        self.current_page = 0
+        self.bot_avatar_url = bot_avatar_url
+        self.update_buttons()
 
+    def update_buttons(self):
+        # Vô hiệu hóa nút "Trước" nếu đang ở trang đầu, nút "Sau" nếu ở trang cuối
+        self.prev_button.disabled = self.current_page == 0
+        self.next_button.disabled = self.current_page == len(self.pages) - 1
+        self.page_indicator.label = f"Trang {self.current_page + 1}/{len(self.pages)}"
+
+    def get_current_embed(self):
+        embed = discord.Embed(
+            description=self.pages[self.current_page],
+            color=0xff73fa,
+            timestamp=discord.utils.utcnow()
+        )
+        embed.set_thumbnail(url=self.bot_avatar_url)
+        embed.set_footer(text=FOOTER_TEXT)
+        return embed
+
+    @discord.ui.button(label="◀ Trước", style=discord.ButtonStyle.primary, custom_id="prev_page")
+    async def prev_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.current_page -= 1
+        self.update_buttons()
+        await interaction.response.edit_message(embed=self.get_current_embed(), view=self)
+
+    @discord.ui.button(label="Trang X/Y", style=discord.ButtonStyle.secondary, disabled=True, custom_id="page_indicator")
+    async def page_indicator(self, interaction: discord.Interaction, button: discord.ui.Button):
+        pass # Nút này chỉ dùng để hiển thị chữ "Trang ...", không có chức năng bấm
+
+    @discord.ui.button(label="Sau ▶", style=discord.ButtonStyle.primary, custom_id="next_page")
+    async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.current_page += 1
+        self.update_buttons()
+        await interaction.response.edit_message(embed=self.get_current_embed(), view=self)
+
+
+# === MODULE COG CHÍNH THỨC ===
 class BoosterCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -266,73 +310,72 @@ class BoosterCog(commands.Cog):
             await interaction.response.send_message(embed=embed_role, ephemeral=False, allowed_mentions=discord.AllowedMentions.none())
             return
 
-        # ====== KỊCH BẢN 2: MỞ SỔ TAY TỔNG HỢP ======
+        # ====== KỊCH BẢN 2: MỞ SỔ TAY TỔNG HỢP (PHÂN TRANG) ======
         def count_role(role_id):
             r = guild.get_role(role_id)
             return len(r.members) if r else 0
 
-        content = f"""# <:TugIsl_search:1169899042411655229> SỔ TAY ROLE ĐẢO TUGLAR #
-## <:TugIsl_icon_filter:1169910021644111932> Phân loại role ##
-> - Các role trong server được chia ra làm nhiều loại khác nhau. Mỗi loại có cách sở hữu và đặc quyền ưu tiên khác nhau.
-> - Hiện tại, server có các phân loại chính: 
-
+        # Trang 1: Lời mở đầu & Phân loại
+        page_1 = """# 📘 SỔ TAY ROLE ĐẢO TUGLAR #
 ### ⚜️ Special Role ###
-> Các role này thường chỉ dành cho một số người với các tiêu chí để nhận, đặc biệt hơn so với achievement role 
+> Các role này thường chỉ dành cho một số người với các tiêu chí để nhận, đặc biệt hơn so với achievement role.
 
 ### 🎉 Event Role  ###
-> - Các role này thường chỉ xuất hiện **1 lần duy nhất** với các sự kiện để đánh dấu lại cột mốc thời gian bạn đã đồng hành cùng với server.
+> - Các role này thường chỉ xuất hiện **1 lần duy nhất** với các sự kiện để đánh dấu lại cột mốc thời gian bạn đã đồng hành cùng với server."""
 
-# 🎉 Event Role
+        # Trang 2: Nửa đầu Event Role
+        page_2 = f"""# 🎉 Event Role (Trang 1)
 ## <@&1466299698800365695> <:tet2026:1510063136831705270>
 > - Ra mắt: <t:1771200240:D>
 > - Cách nhận: **Chat trong server trong thời gian diễn ra Sự kiện Tết Bính Ngọ 2026**
 > - Sở hữu: `{count_role(1466299698800365695)}`
-## 1274907870701424755 <:trungthu2024:1510063138970800219>
+## <@&1274907870701424755> <:trungthu2024:1510063138970800219>
 > - Ra mắt: <t:1724112240:D>
 > - Cách nhận: **Thu thập nguyên liệu làm Bánh Trung Thu 🥮 tại Sự kiện Tết Trung Thu 2024**
 > - Sở hữu: `{count_role(1274907870701424755)}`
 ## <@&1240597343049486397> <:2anni:1510063188543275118>
-> - Ra mắt: <t:1688835600:D>
-> - Cách nhận: **Tham gia SK SN 2 Tuổi Đảo Tuglar**
-> - Sở hữu: `{count_role(1240597343049486397)}`
+> - Ra mắt: <t:1720483440:D>
+> - Cách nhận: **Gửi lời chúc mừng sinh nhật server tròn 2 tuổi**
+> - Sở hữu: `{count_role(1240597343049486397)}`"""
+
+        # Trang 3: Nửa sau Event Role
+        page_3 = f"""# 🎉 Event Role (Trang 2)
 ## <@&1157198996234842143> <:1anni:1510063186429083648>
-> - Ra mắt: <t:1688835600:D>
+> - Ra mắt: <t:1688861040:D>
 > - Cách nhận: **Tham gia SK SN 1 Tuổi Đảo Tuglar**
 > - Sở hữu: `{count_role(1157198996234842143)}`
 ## <@&1189375452603756645> <:tet2024:1510063134415650946> 
 > - Ra mắt: <t:1706720400:D>
-> - Cách nhận: **Đổi mảnh 🧩 tại Sự kiện Trang trí Tết 2024**
+> - Cách nhận: **Đổi mảnh 🧩 tại Sự kiện Trang trí Tết Giáp Thìn 2024**
 > - Sở hữu: `{count_role(1189375452603756645)}`
 ## <@&1169623255297032272> <:winterlands2023:1510063146583199994>
 > - Ra mắt: <t:1698771600:D>
 > - Cách nhận: **Tưới cây thông noel 🎄 trong thời gian diễn ra Sự kiện Winterlands 2023**
-> - Sở hữu: `{count_role(1169623255297032272)}`
+> - Sở hữu: `{count_role(1169623255297032272)}`"""
 
-
-
-# ⚜️ Special Role
+        # Trang 4: Special Role
+        page_4 = f"""# ⚜️ Special Role
 ## <@&1346173590642622528> <:DaoTuglarClanOld:1510063131584626688>
 > - Ra mắt: <t:1688835600:D>
 > - Cách nhận: **Tham gia Quân đoàn Free Fire Đảo Tuglar**
 > - Sở hữu: `{count_role(1346173590642622528)}`
 ## <@&1175019718466359306> <:TuglarPars:1510063144532316242>
-> - Ra mắt: <t:1698771600:D>
+> - Ra mắt: Chưa cập nhật
 > - Cách nhận: **Tham gia Clan Liên Quân TuglarPars**
 > - Sở hữu: `{count_role(1175019718466359306)}`
 ## <@&1113018418300452894> <:TuglarPars:1510063144532316242>
-> - Ra mắt: <t:1698771600:D>
+> - Ra mắt: Chưa cập nhật
 > - Cách nhận: **Tham gia CLB Par.**
 > - Sở hữu: `{count_role(1113018418300452894)}`"""
-        
-        embed_index = discord.Embed(
-            description=content,
-            color=0xff73fa,
-            timestamp=discord.utils.utcnow()
-        )
-        embed_index.set_thumbnail(url=bot_avatar_url)
-        embed_index.set_footer(text=FOOTER_TEXT)
 
-        await interaction.response.send_message(embed=embed_index, ephemeral=False, allowed_mentions=discord.AllowedMentions.none())
+        # Gom các trang vào 1 danh sách
+        pages = [page_1, page_2, page_3, page_4]
+        
+        # Khởi tạo giao diện Phân trang
+        view = IndexPaginationView(pages, bot_avatar_url)
+        embed_index = view.get_current_embed()
+
+        await interaction.response.send_message(embed=embed_index, view=view, ephemeral=False, allowed_mentions=discord.AllowedMentions.none())
 
 async def setup(bot):
     await bot.add_cog(BoosterCog(bot))
