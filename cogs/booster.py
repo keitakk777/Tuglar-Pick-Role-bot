@@ -230,7 +230,9 @@ class BoosterCog(commands.Cog):
     @app_commands.describe(role="Chọn role bạn muốn tra cứu (Bỏ trống để mở trang Sổ Tay tổng hợp)")
     async def index_cmd(self, interaction: discord.Interaction, role: discord.Role = None):
         guild = interaction.guild
+        bot_avatar_url = self.bot.user.display_avatar.url
         
+        # ====== KỊCH BẢN 1: TRA CỨU ROLE BẤT KỲ ======
         if role:
             cach_nhan = "Đang cập nhật... (Role ẩn hoặc Role Sự kiện)"
             dac_quyen = "Chưa có thông tin"
@@ -247,15 +249,24 @@ class BoosterCog(commands.Cog):
 
             so_nguoi = len(role.members) 
             
-            content = (
-                f"## {role.mention}\n"
-                f"> - Cách nhận: **{cach_nhan}**\n"
-                f"> - Đặc quyền: {dac_quyen}\n"
-                f"> - Sở hữu: `{so_nguoi}`\n"
+            embed_role = discord.Embed(
+                title="🔍 KẾT QUẢ TRA CỨU ROLE",
+                description=(
+                    f"## {role.mention}\n"
+                    f"> - Cách nhận: **{cach_nhan}**\n"
+                    f"> - Đặc quyền: {dac_quyen}\n"
+                    f"> - Sở hữu: `{so_nguoi}` người\n"
+                ),
+                color=role.color if role.color.value != 0 else 0xff73fa,
+                timestamp=discord.utils.utcnow()
             )
-            await interaction.response.send_message(content, ephemeral=False)
+            embed_role.set_thumbnail(url=bot_avatar_url)
+            embed_role.set_footer(text=FOOTER_TEXT)
+
+            await interaction.response.send_message(embed=embed_role, ephemeral=False, allowed_mentions=discord.AllowedMentions.none())
             return
 
+        # ====== KỊCH BẢN 2: MỞ SỔ TAY TỔNG HỢP ======
         def count_role(role_id):
             r = guild.get_role(role_id)
             return len(r.members) if r else 0
@@ -265,34 +276,63 @@ class BoosterCog(commands.Cog):
 > - Các role trong server được chia ra làm nhiều loại khác nhau. Mỗi loại có cách sở hữu và đặc quyền ưu tiên khác nhau.
 > - Hiện tại, server có các phân loại chính: 
 
-### <:TugIsl_icon_bag:1189471543886090313> Collection Role ###
-> - Các role custom, role tùy biến (đặc quyền từ role khác) sẽ ở phân loại này.
-> - Các role này có thể được hiển thị hoặc ẩn ở danh mục ✨ Bộ Sưu Tập
-
-### <:TugIsl_icon_star:1189471573401419827> Special Role ###
+### ⚜️ Special Role ###
 > Các role này thường chỉ dành cho một số người với các tiêu chí để nhận, đặc biệt hơn so với achievement role 
 
-### <:TugIsl_icon_event:1182752944156844093> Event Role  ###
+### 🎉 Event Role  ###
 > - Các role này thường chỉ xuất hiện **1 lần duy nhất** với các sự kiện để đánh dấu lại cột mốc thời gian bạn đã đồng hành cùng với server.
 
-### <:TugIsl_icon_compass:1189060875299078275> Achievement Role  ###
-> Các role này nhận được khi hoàn thành yêu cầu nhất định trong server. Thường không giới hạn thời gian nên dễ sở hữu.
-
-# <:TugIsl_icon_event:1182752944156844093> Event Role
+# 🎉 Event Role
+## <@&1466299698800365695> <:tet2026:1510063136831705270>
+> - Ra mắt: <t:1771200240:D>
+> - Cách nhận: **Chat trong server trong thời gian diễn ra Sự kiện Tết Bính Ngọ 2026**
+> - Sở hữu: `{count_role(1466299698800365695)}`
+## 1274907870701424755 <:trungthu2024:1510063138970800219>
+> - Ra mắt: <t:1724112240:D>
+> - Cách nhận: **Thu thập nguyên liệu làm Bánh Trung Thu 🥮 tại Sự kiện Tết Trung Thu 2024**
+> - Sở hữu: `{count_role(1274907870701424755)}`
+## <@&1240597343049486397> <:2anni:1510063188543275118>
+> - Ra mắt: <t:1688835600:D>
+> - Cách nhận: **Tham gia SK SN 2 Tuổi Đảo Tuglar**
+> - Sở hữu: `{count_role(1240597343049486397)}`
 ## <@&1157198996234842143> <:1anni:1510063186429083648>
-> - Ra mắt: <t:1688835600:R>
+> - Ra mắt: <t:1688835600:D>
 > - Cách nhận: **Tham gia SK SN 1 Tuổi Đảo Tuglar**
 > - Sở hữu: `{count_role(1157198996234842143)}`
-## <@&1169623255297032272> <:winterlands2023:1510063146583199994>
-> - Ra mắt: <t:1698771600:R>
-> - Cách nhận: **Tưới cây thông noel 🎄**
-> - Sở hữu: `{count_role(1169623255297032272)}`
 ## <@&1189375452603756645> <:tet2024:1510063134415650946> 
-> - Ra mắt: <t:1706720400:R>
-> - Cách nhận: **Đổi mảnh 🧩 - Sự kiện Trang trí Tết 2024**
-> - Sở hữu: `{count_role(1189375452603756645)}`"""
+> - Ra mắt: <t:1706720400:D>
+> - Cách nhận: **Đổi mảnh 🧩 tại Sự kiện Trang trí Tết 2024**
+> - Sở hữu: `{count_role(1189375452603756645)}`
+## <@&1169623255297032272> <:winterlands2023:1510063146583199994>
+> - Ra mắt: <t:1698771600:D>
+> - Cách nhận: **Tưới cây thông noel 🎄 trong thời gian diễn ra Sự kiện Winterlands 2023**
+> - Sở hữu: `{count_role(1169623255297032272)}`
+
+
+
+# ⚜️ Special Role
+## <@&1346173590642622528> <:DaoTuglarClanOld:1510063131584626688>
+> - Ra mắt: <t:1688835600:D>
+> - Cách nhận: **Tham gia Quân đoàn Free Fire Đảo Tuglar**
+> - Sở hữu: `{count_role(1346173590642622528)}`
+## <@&1175019718466359306> <:TuglarPars:1510063144532316242>
+> - Ra mắt: <t:1698771600:D>
+> - Cách nhận: **Tham gia Clan Liên Quân TuglarPars**
+> - Sở hữu: `{count_role(1175019718466359306)}`
+## <@&1113018418300452894> <:TuglarPars:1510063144532316242>
+> - Ra mắt: <t:1698771600:D>
+> - Cách nhận: **Tham gia CLB Par.**
+> - Sở hữu: `{count_role(1113018418300452894)}`"""
         
-        await interaction.response.send_message(content, ephemeral=False)
+        embed_index = discord.Embed(
+            description=content,
+            color=0xff73fa,
+            timestamp=discord.utils.utcnow()
+        )
+        embed_index.set_thumbnail(url=bot_avatar_url)
+        embed_index.set_footer(text=FOOTER_TEXT)
+
+        await interaction.response.send_message(embed=embed_index, ephemeral=False, allowed_mentions=discord.AllowedMentions.none())
 
 async def setup(bot):
     await bot.add_cog(BoosterCog(bot))
