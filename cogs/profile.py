@@ -96,14 +96,14 @@ class ProfileMenuView(discord.ui.View):
             free_options = [
                 discord.SelectOption(label="Gỡ Role Màu", value="0", emoji="❌"),
                 # [CHÚ Ý] Thay tên, value (ID Role) và emoji bên dưới bằng của server bạn
-                discord.SelectOption(label="MC in Ohio", value="1312519934848401580"),
-                discord.SelectOption(label="Radiant", value="1312510496582139914"),
-                discord.SelectOption(label="SmugMan", value="1312446704548839527"),
-                discord.SelectOption(label="CocoFallin'", value="1312520131536224406"),
-                discord.SelectOption(label="Skull'", value="1312515004116762645"),
-                discord.SelectOption(label="Tê Liệt", value="1312521732908650506"),
-                discord.SelectOption(label="SGP", value="1312520371022331985"),
-                discord.SelectOption(label=":(", value="1312511089862250577")
+                discord.SelectOption(label="MC in Ohio", value="1312519934848401580", emoji="<:IC_MCOhio:1524081637061689535>"),
+                discord.SelectOption(label="Radiant", value="1312510496582139914", emoji="<:IC_Radiant:1524082931818303548>"),
+                discord.SelectOption(label="SmugMan", value="1312446704548839527", emoji="<:IC_SmugMan:1524083376846278826>"),
+                discord.SelectOption(label="CocoFallin'", value="1312520131536224406", emoji="<:IC_CocoFallin:1524084246736666684>"),
+                discord.SelectOption(label="Skull'", value="1312515004116762645", emoji="<:IC_Skull:1524084641814806751>"),
+                discord.SelectOption(label="Tê Liệt", value="1312521732908650506", emoji="<:IC_T1:1524085966829129898>"),
+                discord.SelectOption(label="SGP", value="1312520371022331985", emoji="<:IC_SGP:1524086389010858166>"),
+                discord.SelectOption(label=":(", value="1312511089862250577", emoji="<:IC_sad:1524087271328841770>")
             ]
             all_booster_ids.extend(FREE_COLOR_ROLE_IDS)
             self.add_item(GenericRoleSelect("Freebies", free_options, ALL_REMOVABLE_ROLES))
