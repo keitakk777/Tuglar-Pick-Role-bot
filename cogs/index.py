@@ -142,10 +142,10 @@ class IndexCog(commands.Cog):
             )
 
         page_1 = """# 📘 SỔ TAY ROLE ĐẢO TUGLAR #
-### ⚜️ Special Role ###
+### <:TI_ultspecial:1524079822072971444> Special Role ###
  Các role này thường chỉ dành cho một số người với các tiêu chí để nhận, đặc biệt hơn so với achievement role.
 
-### 🎉 Event Role  ###
+### <:TI_ultev:1524079014845743235> Event Role  ###
  - Các role này thường chỉ xuất hiện **1 lần duy nhất** với các sự kiện để đánh dấu lại cột mốc thời gian bạn đã đồng hành cùng với server."""
 
         # Bot tự động lấy data từ ROLE_INFO_DB để tạo trang, nhàn tênh!
