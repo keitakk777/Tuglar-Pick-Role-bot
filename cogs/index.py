@@ -136,9 +136,9 @@ class IndexCog(commands.Cog):
             return (
                 f"## <@&{role_id}>\n"
                 f" - Ra mắt: {time_str}\n"
-                f" - {emoji_prefix} Cách nhận: **{info['cach_nhan']}**\n"
-                f" - 🎁 Đặc quyền: {info['dac_quyen']}\n"
-                f" - 👥 Sở hữu: `{count_role(role_id)}` người"
+                f" - <:TI_ultinfo:1524096769414139996> Cách nhận: **{info['cach_nhan']}**\n"
+                f" - <:TI_ultgift:1524096997815095359> Đặc quyền: {info['dac_quyen']}\n"
+                f" - <:TI_ultcount:1524096758919991486> Sở hữu: `{count_role(role_id)}` người"
             )
 
         page_1 = """# 📘 SỔ TAY ROLE ĐẢO TUGLAR #
