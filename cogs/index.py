@@ -125,43 +125,43 @@ class IndexCog(commands.Cog):
         page_2 = f"""# 🎉 Event Role (Trang 1)
 ## <@&1466299698800365695> <:tet2026:1510063136831705270>
  - Ra mắt: <t:1771200240:D>
- - Cách nhận: **Chat trong server trong thời gian diễn ra Sự kiện Tết Bính Ngọ 2026**
+ - Cách nhận: **<:TI_ultev:1524079014845743235> Chat trong server trong thời gian diễn ra Sự kiện Tết Bính Ngọ 2026**
  - Sở hữu: `{count_role(1466299698800365695)}`
 ## <@&1274907870701424755> <:trungthu2024:1510063138970800219>
  - Ra mắt: <t:1724112240:D>
- - Cách nhận: **Thu thập nguyên liệu làm Bánh Trung Thu 🥮 tại Sự kiện Tết Trung Thu 2024**
+ - Cách nhận: **<:TI_ultev:1524079014845743235> Thu thập nguyên liệu làm Bánh Trung Thu 🥮 tại Sự kiện Tết Trung Thu 2024**
  - Sở hữu: `{count_role(1274907870701424755)}`
 ## <@&1240597343049486397> <:2anni:1510063188543275118>
  - Ra mắt: <t:1720483440:D>
- - Cách nhận: **Gửi lời chúc mừng sinh nhật server tròn 2 tuổi**
+ - Cách nhận: **<:TI_ultev:1524079014845743235> Gửi lời chúc mừng sinh nhật server tròn 2 tuổi**
  - Sở hữu: `{count_role(1240597343049486397)}`"""
 
         page_3 = f"""# 🎉 Event Role (Trang 2)
 ## <@&1189375452603756645> <:tet2024:1510063134415650946> 
  - Ra mắt: <t:1706720400:D>
- - Cách nhận: **Đổi mảnh 🧩 tại Sự kiện Trang trí Tết Giáp Thìn 2024**
+ - Cách nhận: **<:TI_ultev:1524079014845743235> Đổi mảnh 🧩 tại Sự kiện Trang trí Tết Giáp Thìn 2024**
  - Sở hữu: `{count_role(1189375452603756645)}`
 ## <@&1157198996234842143> <:1anni:1510063186429083648>
  - Ra mắt: <t:1688861040:D>
- - Cách nhận: **Tham gia SK SN 1 Tuổi Đảo Tuglar**
+ - Cách nhận: **<:TI_ultev:1524079014845743235> Tham gia SK SN 1 Tuổi Đảo Tuglar**
  - Sở hữu: `{count_role(1157198996234842143)}`
 ## <@&1169623255297032272> <:winterlands2023:1510063146583199994>
  - Ra mắt: <t:1698771600:D>
- - Cách nhận: **Tưới cây thông noel 🎄 trong thời gian diễn ra Sự kiện Winterlands 2023**
+ - Cách nhận: **<:TI_ultev:1524079014845743235> Tưới cây thông noel 🎄 trong thời gian diễn ra Sự kiện Winterlands 2023**
  - Sở hữu: `{count_role(1169623255297032272)}`"""
 
         page_4 = f"""# ⚜️ Special Role
 ## <@&1346173590642622528> <:DaoTuglarClanOld:1510063131584626688>
  - Ra mắt: <t:1688835600:D>
- - Cách nhận: **Tham gia Quân đoàn Free Fire Đảo Tuglar**
+ - Cách nhận: **<:TI_ultspecial:1524079822072971444> Tham gia Quân đoàn Free Fire Đảo Tuglar**
  - Sở hữu: `{count_role(1346173590642622528)}`
 ## <@&1175019718466359306> <:TuglarPars:1510063144532316242>
  - Ra mắt: Chưa cập nhật
- - Cách nhận: **Tham gia Clan Liên Quân TuglarPars**
+ - Cách nhận: **<:TI_ultspecial:1524079822072971444> Tham gia Clan Liên Quân TuglarPars**
  - Sở hữu: `{count_role(1175019718466359306)}`
 ## <@&1113018418300452894> <:TuglarPars:1510063144532316242>
  - Ra mắt: Chưa cập nhật
- - Cách nhận: **Tham gia CLB Par.**
+ - Cách nhận: **<:TI_ultspecial:1524079822072971444> Tham gia CLB Par.**
  - Sở hữu: `{count_role(1113018418300452894)}`"""
 
         pages = [page_1, page_2, page_3, page_4]
