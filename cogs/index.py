@@ -62,10 +62,10 @@ class IndexCog(commands.Cog):
             
             if role.id == BOOSTER_ROLE_ID:
                 cach_nhan = "Nạp Boost cho Server (Mở khóa Tier 0)"
-                dac_quyen = "<:perk_collection:1193667977405534218> Truy cập Kho đồ Màu Sắc"
+                dac_quyen = "<:TI_ultbalo:1524070344577650869> Truy cập Kho đồ Màu Sắc"
             elif role.id in ALL_COLOR_ROLES or role.id in ALL_ICON_ROLES:
                 cach_nhan = "Mở khóa từ Đặc quyền Booster (Dùng lệnh `/profile`)"
-                dac_quyen = "<:perk_displayseperately:1193783034323931207> Trang trí Profile"
+                dac_quyen = "<:TI_ultProfile:1524070769498390760> Trang trí Profile"
             elif role.permissions.administrator:
                 cach_nhan = "Role đặc quyền dành cho Ban Quản Trị"
                 dac_quyen = "Toàn quyền quản lý Server"

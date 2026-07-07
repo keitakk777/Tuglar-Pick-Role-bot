@@ -14,7 +14,10 @@ class TuglarBot(commands.Bot):
 
     # Tự động tải thư mục Cogs khi bot khởi động
     async def setup_hook(self):
-        await self.load_extension('cogs.booster')
+        # ĐÃ SỬA Ở ĐÂY: Báo cho bot load 2 file mới thay vì file booster cũ
+        await self.load_extension('cogs.profile')
+        await self.load_extension('cogs.index')
+        
         await self.tree.sync()
         print("🔄 Đã đồng bộ toàn bộ lệnh Slash (/) lên Server.")
 
