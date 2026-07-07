@@ -112,9 +112,9 @@ class IndexCog(commands.Cog):
                 title="🔍 KẾT QUẢ TRA CỨU ROLE",
                 description=(
                     f"## {role.mention}\n"
-                    f"> - {emoji_prefix} Cách nhận: **{cach_nhan}**\n"
-                    f"> - 🎁 Đặc quyền: {dac_quyen}\n"
-                    f"> - 👥 Sở hữu: `{so_nguoi}` người\n"
+                    f" - <:TI_ultinfo:1524096769414139996> Cách nhận: **{cach_nhan}**\n"
+                    f" - <:TI_ultgift:1524096997815095359> Đặc quyền: {dac_quyen}\n"
+                    f" - <:TI_ultcount:1524096758919991486> Sở hữu: `{so_nguoi}` người\n"
                 ),
                 color=role.color if role.color.value != 0 else 0xff73fa,
                 timestamp=discord.utils.utcnow()
