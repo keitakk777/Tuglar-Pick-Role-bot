@@ -1,8 +1,8 @@
 import os
 
 TOKEN = os.environ.get('DISCORD_TOKEN') 
-BOT_VERSION = "v2.8.0"           
-LAST_UPDATED = "30/05/2026"      
+BOT_VERSION = "v2.8.1"           
+LAST_UPDATED = "07/07/2026"      
 FOOTER_TEXT = f"Tuglar Pick Role {BOT_VERSION} • Cập nhật: {LAST_UPDATED}"
 
 SERVER_ID = 995320755002814514

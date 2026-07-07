@@ -103,7 +103,7 @@ class ProfileMenuView(discord.ui.View):
                 discord.SelectOption(label="Skull'", value="1312515004116762645"),
                 discord.SelectOption(label="Tê Liệt", value="1312521732908650506"),
                 discord.SelectOption(label="SGP", value="1312520371022331985"),
-                discord.SelectOption(label=":()", value="1312511089862250577")
+                discord.SelectOption(label=":(", value="1312511089862250577")
             ]
             all_booster_ids.extend(FREE_COLOR_ROLE_IDS)
             self.add_item(GenericRoleSelect("Freebies", free_options, ALL_REMOVABLE_ROLES))
