@@ -3,20 +3,24 @@ from discord.ext import commands
 from discord import app_commands
 from config import *
 
-# Từ điển chứa thông tin cụ thể của các Role Sự Kiện và Special Role
+# === ĐỊNH NGHĨA EMOJI ===
+EMOJI_EVENT = "<:TI_ultev:1524079014845743235>"
+EMOJI_SPECIAL = "<:TI_ultspecial:1524079822072971444>"
+
+# === KHO DỮ LIỆU TẬP TRUNG CHO ROLE ===
 ROLE_INFO_DB = {
     # --- EVENT ROLES ---
-    1466299698800365695: {"cach_nhan": "<:TI_ultev:1524079014845743235> Chat trong server trong thời gian diễn ra Sự kiện Tết Bính Ngọ 2026", "dac_quyen": "Huy hiệu kỷ niệm Sự kiện Tết 2026"},
-    1274907870701424755: {"cach_nhan": "<:TI_ultev:1524079014845743235> Thu thập nguyên liệu làm Bánh Trung Thu 🥮 tại Sự kiện Tết Trung Thu 2024", "dac_quyen": "Huy hiệu kỷ niệm Trung Thu 2024"},
-    1240597343049486397: {"cach_nhan": "<:TI_ultev:1524079014845743235> Gửi lời chúc mừng sinh nhật server tròn 2 tuổi", "dac_quyen": "Huy hiệu kỷ niệm 2 Năm Thành Lập"},
-    1189375452603756645: {"cach_nhan": "<:TI_ultev:1524079014845743235> Đổi mảnh 🧩 tại Sự kiện Trang trí Tết Giáp Thìn 2024", "dac_quyen": "Huy hiệu kỷ niệm Tết Giáp Thìn 2024"},
-    1157198996234842143: {"cach_nhan": "<:TI_ultev:1524079014845743235> Tham gia Sự kiện Sinh Nhật 1 Tuổi Đảo Tuglar", "dac_quyen": "Huy hiệu kỷ niệm 1 Năm Thành Lập"},
-    1169623255297032272: {"cach_nhan": "<:TI_ultev:1524079014845743235> Tưới cây thông noel 🎄 trong thời gian diễn ra Sự kiện Winterlands 2023", "dac_quyen": "Huy hiệu kỷ niệm Winterlands 2023"},
+    1466299698800365695: {"type": "event", "timestamp": "1771200240", "cach_nhan": "Tương tác trong server dịp Sự kiện Tết Bính Ngọ 2026", "dac_quyen": "Huy hiệu kỷ niệm Tết 2026"},
+    1274907870701424755: {"type": "event", "timestamp": "1724112240", "cach_nhan": "Thu thập nguyên liệu Bánh Trung Thu tại Sự kiện 2024", "dac_quyen": "Huy hiệu kỷ niệm Trung Thu 2024"},
+    1240597343049486397: {"type": "event", "timestamp": "1720483440", "cach_nhan": "Gửi lời chúc mừng Sinh nhật Server tròn 2 tuổi", "dac_quyen": "Huy hiệu kỷ niệm 2 Năm Thành Lập"},
+    1189375452603756645: {"type": "event", "timestamp": "1706720400", "cach_nhan": "Đổi mảnh ghép tại Sự kiện Trang trí Tết Giáp Thìn 2024", "dac_quyen": "Huy hiệu kỷ niệm Tết Giáp Thìn 2024"},
+    1157198996234842143: {"type": "event", "timestamp": "1688861040", "cach_nhan": "Tham gia chuỗi Sự kiện Sinh Nhật 1 Tuổi", "dac_quyen": "Huy hiệu kỷ niệm 1 Năm Thành Lập"},
+    1169623255297032272: {"type": "event", "timestamp": "1698771600", "cach_nhan": "Tưới Cây thông Noel tại Sự kiện Winterlands 2023", "dac_quyen": "Huy hiệu kỷ niệm Winterlands 2023"},
     
     # --- SPECIAL ROLES ---
-    1346173590642622528: {"cach_nhan": "<:TI_ultspecial:1524079822072971444> Tham gia Quân đoàn Free Fire Đảo Tuglar", "dac_quyen": "Thành viên Quân đoàn chính thức"},
-    1175019718466359306: {"cach_nhan": "<:TI_ultspecial:1524079822072971444> Tham gia Clan Liên Quân TuglarPars", "dac_quyen": "Thành viên Clan Liên Quân"},
-    1113018418300452894: {"cach_nhan": "<:TI_ultspecial:1524079822072971444> Tham gia CLB Par.", "dac_quyen": "Thành viên Câu lạc bộ Par."},
+    1346173590642622528: {"type": "special", "timestamp": "1688835600", "cach_nhan": "Trở thành thành viên Quân đoàn Free Fire Đảo Tuglar", "dac_quyen": "Thành viên Quân đoàn chính thức"},
+    1175019718466359306: {"type": "special", "timestamp": None, "cach_nhan": "Trở thành thành viên Clan Liên Quân TuglarPars", "dac_quyen": "Thành viên Clan Liên Quân"},
+    1113018418300452894: {"type": "special", "timestamp": None, "cach_nhan": "Trở thành thành viên Câu lạc bộ Par.", "dac_quyen": "Thành viên Câu lạc bộ Par."},
 }
 
 # === CÁC LỚP GIAO DIỆN (UI VIEWS) CHO INDEX ===
@@ -71,35 +75,46 @@ class IndexCog(commands.Cog):
         guild = interaction.guild
         bot_avatar_url = self.bot.user.display_avatar.url
         
+        def count_role(role_id):
+            r = guild.get_role(role_id)
+            return len(r.members) if r else 0
+
         # ====== KỊCH BẢN 1: TRA CỨU ROLE BẤT KỲ ======
         if role:
             cach_nhan = "Đang cập nhật... (Role ẩn hoặc Role Sự kiện)"
             dac_quyen = "Chưa có thông tin"
+            emoji_prefix = "🏷️"
             
             # 1. Kiểm tra xem role có trong Từ điển Sự Kiện/Đặc biệt không
             if role.id in ROLE_INFO_DB:
-                cach_nhan = ROLE_INFO_DB[role.id]["cach_nhan"]
-                dac_quyen = ROLE_INFO_DB[role.id]["dac_quyen"]
+                info = ROLE_INFO_DB[role.id]
+                cach_nhan = info["cach_nhan"]
+                dac_quyen = info["dac_quyen"]
+                emoji_prefix = EMOJI_EVENT if info["type"] == "event" else EMOJI_SPECIAL
+                
             # 2. Kiểm tra các Role Hệ thống (Booster, Màu)
             elif role.id == BOOSTER_ROLE_ID:
                 cach_nhan = "Nạp Boost cho Server (Mở khóa Tier 0)"
-                dac_quyen = "<:TI_ultbalo:1524070344577650869> Truy cập Kho đồ Màu Sắc"
+                dac_quyen = "Truy cập Kho đồ Màu Sắc"
+                emoji_prefix = "💎"
             elif role.id in ALL_COLOR_ROLES or role.id in ALL_ICON_ROLES:
                 cach_nhan = "Mở khóa từ Đặc quyền Booster (Dùng lệnh `/profile`)"
-                dac_quyen = "<:TI_ultProfile:1524070769498390760> Trang trí Profile"
+                dac_quyen = "Trang trí Profile cá nhân"
+                emoji_prefix = "🎨"
             elif role.permissions.administrator:
                 cach_nhan = "Role đặc quyền dành cho Ban Quản Trị"
                 dac_quyen = "Toàn quyền quản lý Server"
+                emoji_prefix = "👑"
 
-            so_nguoi = len(role.members) 
+            so_nguoi = count_role(role.id)
             
             embed_role = discord.Embed(
                 title="🔍 KẾT QUẢ TRA CỨU ROLE",
                 description=(
                     f"## {role.mention}\n"
-                    f" - Cách nhận: **{cach_nhan}**\n"
-                    f" - Đặc quyền: {dac_quyen}\n"
-                    f" - Sở hữu: `{so_nguoi}` người\n"
+                    f"> - {emoji_prefix} Cách nhận: **{cach_nhan}**\n"
+                    f"> - 🎁 Đặc quyền: {dac_quyen}\n"
+                    f"> - 👥 Sở hữu: `{so_nguoi}` người\n"
                 ),
                 color=role.color if role.color.value != 0 else 0xff73fa,
                 timestamp=discord.utils.utcnow()
@@ -111,58 +126,43 @@ class IndexCog(commands.Cog):
             return
 
         # ====== KỊCH BẢN 2: MỞ SỔ TAY TỔNG HỢP (PHÂN TRANG) ======
-        def count_role(role_id):
-            r = guild.get_role(role_id)
-            return len(r.members) if r else 0
+        
+        # Hàm tự động tạo khối văn bản cho từng role, không phải gõ tay nữa
+        def get_role_block(role_id):
+            info = ROLE_INFO_DB[role_id]
+            emoji_prefix = EMOJI_EVENT if info["type"] == "event" else EMOJI_SPECIAL
+            time_str = f"<t:{info['timestamp']}:D>" if info['timestamp'] else "Chưa cập nhật"
+            
+            return (
+                f"## <@&{role_id}>\n"
+                f" - Ra mắt: {time_str}\n"
+                f" - {emoji_prefix} Cách nhận: **{info['cach_nhan']}**\n"
+                f" - 🎁 Đặc quyền: {info['dac_quyen']}\n"
+                f" - 👥 Sở hữu: `{count_role(role_id)}` người"
+            )
 
         page_1 = """# 📘 SỔ TAY ROLE ĐẢO TUGLAR #
-### <:TI_ultspecial:1524079822072971444> Special Role ###
+### ⚜️ Special Role ###
  Các role này thường chỉ dành cho một số người với các tiêu chí để nhận, đặc biệt hơn so với achievement role.
 
-### <:TI_ultev:1524079014845743235> Event Role  ###
+### 🎉 Event Role  ###
  - Các role này thường chỉ xuất hiện **1 lần duy nhất** với các sự kiện để đánh dấu lại cột mốc thời gian bạn đã đồng hành cùng với server."""
 
+        # Bot tự động lấy data từ ROLE_INFO_DB để tạo trang, nhàn tênh!
         page_2 = f"""# 🎉 Event Role (Trang 1)
-## <@&1466299698800365695> <:tet2026:1510063136831705270>
- - Ra mắt: <t:1771200240:D>
- - Cách nhận: **<:TI_ultev:1524079014845743235> Chat trong server trong thời gian diễn ra Sự kiện Tết Bính Ngọ 2026**
- - Sở hữu: `{count_role(1466299698800365695)}`
-## <@&1274907870701424755> <:trungthu2024:1510063138970800219>
- - Ra mắt: <t:1724112240:D>
- - Cách nhận: **<:TI_ultev:1524079014845743235> Thu thập nguyên liệu làm Bánh Trung Thu 🥮 tại Sự kiện Tết Trung Thu 2024**
- - Sở hữu: `{count_role(1274907870701424755)}`
-## <@&1240597343049486397> <:2anni:1510063188543275118>
- - Ra mắt: <t:1720483440:D>
- - Cách nhận: **<:TI_ultev:1524079014845743235> Gửi lời chúc mừng sinh nhật server tròn 2 tuổi**
- - Sở hữu: `{count_role(1240597343049486397)}`"""
+{get_role_block(1466299698800365695)}
+{get_role_block(1274907870701424755)}
+{get_role_block(1240597343049486397)}"""
 
         page_3 = f"""# 🎉 Event Role (Trang 2)
-## <@&1189375452603756645> <:tet2024:1510063134415650946> 
- - Ra mắt: <t:1706720400:D>
- - Cách nhận: **<:TI_ultev:1524079014845743235> Đổi mảnh 🧩 tại Sự kiện Trang trí Tết Giáp Thìn 2024**
- - Sở hữu: `{count_role(1189375452603756645)}`
-## <@&1157198996234842143> <:1anni:1510063186429083648>
- - Ra mắt: <t:1688861040:D>
- - Cách nhận: **<:TI_ultev:1524079014845743235> Tham gia SK SN 1 Tuổi Đảo Tuglar**
- - Sở hữu: `{count_role(1157198996234842143)}`
-## <@&1169623255297032272> <:winterlands2023:1510063146583199994>
- - Ra mắt: <t:1698771600:D>
- - Cách nhận: **<:TI_ultev:1524079014845743235> Tưới cây thông noel 🎄 trong thời gian diễn ra Sự kiện Winterlands 2023**
- - Sở hữu: `{count_role(1169623255297032272)}`"""
+{get_role_block(1189375452603756645)}
+{get_role_block(1157198996234842143)}
+{get_role_block(1169623255297032272)}"""
 
         page_4 = f"""# ⚜️ Special Role
-## <@&1346173590642622528> <:DaoTuglarClanOld:1510063131584626688>
- - Ra mắt: <t:1688835600:D>
- - Cách nhận: **<:TI_ultspecial:1524079822072971444> Tham gia Quân đoàn Free Fire Đảo Tuglar**
- - Sở hữu: `{count_role(1346173590642622528)}`
-## <@&1175019718466359306> <:TuglarPars:1510063144532316242>
- - Ra mắt: Chưa cập nhật
- - Cách nhận: **<:TI_ultspecial:1524079822072971444> Tham gia Clan Liên Quân TuglarPars**
- - Sở hữu: `{count_role(1175019718466359306)}`
-## <@&1113018418300452894> <:TuglarPars:1510063144532316242>
- - Ra mắt: Chưa cập nhật
- - Cách nhận: **<:TI_ultspecial:1524079822072971444> Tham gia CLB Par.**
- - Sở hữu: `{count_role(1113018418300452894)}`"""
+{get_role_block(1346173590642622528)}
+{get_role_block(1175019718466359306)}
+{get_role_block(1113018418300452894)}"""
 
         pages = [page_1, page_2, page_3, page_4]
         
