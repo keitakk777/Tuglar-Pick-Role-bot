@@ -3,6 +3,22 @@ from discord.ext import commands
 from discord import app_commands
 from config import *
 
+# Từ điển chứa thông tin cụ thể của các Role Sự Kiện và Special Role
+ROLE_INFO_DB = {
+    # --- EVENT ROLES ---
+    1466299698800365695: {"cach_nhan": "Chat trong server trong thời gian diễn ra Sự kiện Tết Bính Ngọ 2026", "dac_quyen": "Huy hiệu kỷ niệm Sự kiện Tết 2026"},
+    1274907870701424755: {"cach_nhan": "Thu thập nguyên liệu làm Bánh Trung Thu 🥮 tại Sự kiện Tết Trung Thu 2024", "dac_quyen": "Huy hiệu kỷ niệm Trung Thu 2024"},
+    1240597343049486397: {"cach_nhan": "Gửi lời chúc mừng sinh nhật server tròn 2 tuổi", "dac_quyen": "Huy hiệu kỷ niệm 2 Năm Thành Lập"},
+    1189375452603756645: {"cach_nhan": "Đổi mảnh 🧩 tại Sự kiện Trang trí Tết Giáp Thìn 2024", "dac_quyen": "Huy hiệu kỷ niệm Tết Giáp Thìn 2024"},
+    1157198996234842143: {"cach_nhan": "Tham gia Sự kiện Sinh Nhật 1 Tuổi Đảo Tuglar", "dac_quyen": "Huy hiệu kỷ niệm 1 Năm Thành Lập"},
+    1169623255297032272: {"cach_nhan": "Tưới cây thông noel 🎄 trong thời gian diễn ra Sự kiện Winterlands 2023", "dac_quyen": "Huy hiệu kỷ niệm Winterlands 2023"},
+    
+    # --- SPECIAL ROLES ---
+    1346173590642622528: {"cach_nhan": "Tham gia Quân đoàn Free Fire Đảo Tuglar", "dac_quyen": "Thành viên Quân đoàn chính thức"},
+    1175019718466359306: {"cach_nhan": "Tham gia Clan Liên Quân TuglarPars", "dac_quyen": "Thành viên Clan Liên Quân"},
+    1113018418300452894: {"cach_nhan": "Tham gia CLB Par.", "dac_quyen": "Thành viên Câu lạc bộ Par."},
+}
+
 # === CÁC LỚP GIAO DIỆN (UI VIEWS) CHO INDEX ===
 class IndexPaginationView(discord.ui.View):
     def __init__(self, pages, bot_avatar_url):
@@ -60,12 +76,17 @@ class IndexCog(commands.Cog):
             cach_nhan = "Đang cập nhật... (Role ẩn hoặc Role Sự kiện)"
             dac_quyen = "Chưa có thông tin"
             
-            if role.id == BOOSTER_ROLE_ID:
+            # 1. Kiểm tra xem role có trong Từ điển Sự Kiện/Đặc biệt không
+            if role.id in ROLE_INFO_DB:
+                cach_nhan = ROLE_INFO_DB[role.id]["cach_nhan"]
+                dac_quyen = ROLE_INFO_DB[role.id]["dac_quyen"]
+            # 2. Kiểm tra các Role Hệ thống (Booster, Màu)
+            elif role.id == BOOSTER_ROLE_ID:
                 cach_nhan = "Nạp Boost cho Server (Mở khóa Tier 0)"
-                dac_quyen = "<:TI_ultbalo:1524070344577650869> Truy cập Kho đồ Màu Sắc"
+                dac_quyen = "<:perk_collection:1193667977405534218> Truy cập Kho đồ Màu Sắc"
             elif role.id in ALL_COLOR_ROLES or role.id in ALL_ICON_ROLES:
                 cach_nhan = "Mở khóa từ Đặc quyền Booster (Dùng lệnh `/profile`)"
-                dac_quyen = "<:TI_ultProfile:1524070769498390760> Trang trí Profile"
+                dac_quyen = "<:perk_displayseperately:1193783034323931207> Trang trí Profile"
             elif role.permissions.administrator:
                 cach_nhan = "Role đặc quyền dành cho Ban Quản Trị"
                 dac_quyen = "Toàn quyền quản lý Server"
@@ -95,10 +116,10 @@ class IndexCog(commands.Cog):
             return len(r.members) if r else 0
 
         page_1 = """# 📘 SỔ TAY ROLE ĐẢO TUGLAR #
-### <:TI_ultspecial:1524079822072971444> Special Role ###
+### ⚜️ Special Role ###
  Các role này thường chỉ dành cho một số người với các tiêu chí để nhận, đặc biệt hơn so với achievement role.
 
-### <:TI_ultev:1524079014845743235> Event Role  ###
+### 🎉 Event Role  ###
  - Các role này thường chỉ xuất hiện **1 lần duy nhất** với các sự kiện để đánh dấu lại cột mốc thời gian bạn đã đồng hành cùng với server."""
 
         page_2 = f"""# 🎉 Event Role (Trang 1)
